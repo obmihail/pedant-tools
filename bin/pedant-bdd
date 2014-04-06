@@ -1,0 +1,50 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#from __future__ import absolute_import, print_function
+import os,sys,uuid,glob,argparse,re,json,atexit,time,inspect
+reload(sys)  # Reload does the trick!
+sys.setdefaultencoding('UTF8') #unicode features
+
+cmd_folder = os.path.realpath( __file__ + '/../../lib/python' )
+sys.path.insert(0, cmd_folder) if cmd_folder not in sys.path else None
+
+from pedant.projects import register_project_dir
+from pedant.bdd import Application
+
+#parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument( "-t", "--threads", type=int, help="Threads count", default=0)
+parser.add_argument( "-b", "--browsers", nargs='+', help="Browsers list", default=[])
+parser.add_argument( "-f", "--features", nargs='+', help="Features white list. Feature names or location names", default=[])
+parser.add_argument( "-scenarios", "--scenarios", nargs='+', help="Scenarios white list. Scenarios names or location names + line (features/test.feature:3)", default=[])
+parser.add_argument( "-steps", "--steps", nargs='+', help="Steps white list. Steps names or location names + line (features/test.feature:33)", default=[])
+parser.add_argument( "--no-logging", help="Run pedant without log writing", action='store_true')
+parser.add_argument( "--verbose", help="Verbose output", action='store_true')
+#behave args
+parser.add_argument( "-path", "--path", type=str, help="Directory with features or feature path", default='')
+
+args = parser.parse_args()
+
+behave_args = [ '%s=%s'%(argument_name.replace('behave_',''),vars(args)[argument_name]) for argument_name in vars(args).keys() if argument_name.startswith('behave') and vars(args)[argument_name] ]
+
+project = register_project_dir(os.getcwd())
+
+if args.path:
+	behave_args.insert(0, args.path)
+
+filter_d = {
+	'features':args.features,
+	'scenarios':list(args.scenarios),
+	'steps':list(args.steps)}
+
+if args.browsers:
+	project.filter_browsers(list(args.browsers))
+
+if args.threads:
+	project.set_threads_count(args.threads)
+
+app = Application(project, behave_args=behave_args, verbose=args.verbose, logging= not args.no_logging)
+app.build(filter_d=filter_d)
+app.start()
+stat = app.get_statistic()
+exit( (len(stat['TOTAL']) != len(stat['PASSED']) or not len(stat['TOTAL'])) )

@@ -1,0 +1,665 @@
+2015-05-30 23:00:51 [INFO] Skipe state authstate. Can not found urls for scanning 
+
+2015-05-30 23:00:51 [INFO]  --- Pedant started at 31-05-2015 02:00:51  
+
+
+
+
+
+
+2015-05-30 23:00:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c00c3210>, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:00:51 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd/features in state: (examplestate) 
+2015-05-30 23:00:51 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''},) 
+2015-05-30 23:00:51 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:00:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c00c3510>, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:00:51 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Start checking url: http://localhost:8081/projects/new in state: (examplestate) 
+2015-05-30 23:00:51 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/new', 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''},) 
+2015-05-30 23:00:51 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:00:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c00c3f90>, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:00:51 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd in state: (examplestate) 
+2015-05-30 23:00:51 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/bdd', 'id': '7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04', 'description': ''},) 
+2015-05-30 23:00:51 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:00:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c00c38d0>, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:00:51 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/edit in state: (examplestate) 
+2015-05-30 23:00:51 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/edit', 'id': '878fbcc1e86b925e9ae50d0127208986dde30185', 'description': ''},) 
+2015-05-30 23:00:51 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:00:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06b97c9b50>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:00:51 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:00:51 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:00:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd/features in state: (examplestate) 
+2015-05-30 23:00:51 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''},) 
+2015-05-30 23:00:51 [INFO] Function before_one call in hook before_one is ok 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2015-05-30 23:01:35 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''}. Exception: '' 
+2015-05-30 23:01:35 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+2015-05-30 23:01:35 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd/features 
+
+2015-05-30 23:01:35 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/new', 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''}. Exception: '' 
+2015-05-30 23:01:35 [INFO] Save report for item: http://localhost:8081/projects/new  
+2015-05-30 23:01:35 [INFO] Finish checking url http://localhost:8081/projects/new 
+
+2015-05-30 23:01:35 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd', 'id': '7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04', 'description': ''}. Exception: '' 
+2015-05-30 23:01:35 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+2015-05-30 23:01:35 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:35 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:35 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:01:35 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:35 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:35 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:35 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:35 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:35 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:35 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:35 [INFO] Function after_all call in hook after_all is ok 
+
+2015-05-30 23:01:35 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/edit', 'id': '878fbcc1e86b925e9ae50d0127208986dde30185', 'description': ''}. Exception: '' 
+2015-05-30 23:01:35 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+2015-05-30 23:01:35 [INFO] Finish checking url http://localhost:8081/projects/Test_project/edit 
+
+2015-05-30 23:01:35 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''}. Exception: '' 
+2015-05-30 23:01:35 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+2015-05-30 23:01:35 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd/features 
+
+
+
+
+
+
+2015-05-30 23:01:37 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0a68e10>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:37 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Start checking url: http://localhost:8081/projects/new in state: (examplestate) 
+2015-05-30 23:01:37 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/new', 'load_time': 0, 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''},) 
+2015-05-30 23:01:37 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:01:37 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06bafce7d0>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:37 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd in state: (examplestate) 
+2015-05-30 23:01:37 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/bdd', 'load_time': 0, 'id': '7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04', 'description': ''},) 
+2015-05-30 23:01:37 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:01:37 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0989810>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:37 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Start checking url: http://localhost:8081/projects/Test_project/edit in state: (examplestate) 
+2015-05-30 23:01:37 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/edit', 'load_time': 0, 'id': '878fbcc1e86b925e9ae50d0127208986dde30185', 'description': ''},) 
+2015-05-30 23:01:37 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:01:37 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0989e90>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:37 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd/features in state: (examplestate) 
+2015-05-30 23:01:37 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'load_time': 0, 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''},) 
+2015-05-30 23:01:37 [INFO] Function before_one call in hook before_one is ok 
+
+2015-05-30 23:01:37 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c09ff910>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:37 [INFO] Try call function before_all_one on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_one call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Try call function before_all_two on event before_all with args: () 
+2015-05-30 23:01:37 [INFO] Function before_all_two call in hook before_all is ok 
+2015-05-30 23:01:37 [INFO] Start checking url: http://localhost:8081/projects/new in state: (examplestate) 
+2015-05-30 23:01:37 [INFO] Try call function before_one on event before_one with args: ({'url': u'http://localhost:8081/projects/new', 'load_time': 0, 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''},) 
+2015-05-30 23:01:37 [INFO] Function before_one call in hook before_one is ok 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2015-05-30 23:01:47 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/new', 'load_time': 0, 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''}. Exception: '' 
+2015-05-30 23:01:47 [INFO] Save report for item: http://localhost:8081/projects/new  
+2015-05-30 23:01:47 [INFO] Finish checking url http://localhost:8081/projects/new 
+
+2015-05-30 23:01:47 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd', 'load_time': 0, 'id': '7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04', 'description': ''}. Exception: '' 
+2015-05-30 23:01:47 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+2015-05-30 23:01:47 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd 
+
+2015-05-30 23:01:47 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/edit', 'load_time': 0, 'id': '878fbcc1e86b925e9ae50d0127208986dde30185', 'description': ''}. Exception: '' 
+2015-05-30 23:01:47 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+2015-05-30 23:01:47 [INFO] Finish checking url http://localhost:8081/projects/Test_project/edit 
+
+2015-05-30 23:01:47 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'load_time': 0, 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''}. Exception: '' 
+2015-05-30 23:01:47 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+2015-05-30 23:01:47 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd/features 
+
+2015-05-30 23:01:47 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/new', 'load_time': 0, 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''}. Exception: '' 
+2015-05-30 23:01:47 [INFO] Save report for item: http://localhost:8081/projects/new  
+2015-05-30 23:01:47 [INFO] Finish checking url http://localhost:8081/projects/new 
+2015-05-30 23:01:47 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:47 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:47 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:47 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:47 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:47 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:47 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:47 [INFO] Function after_all call in hook after_all is ok 
+2015-05-30 23:01:47 [INFO] Try call function after_all on event after_all with args: () 
+2015-05-30 23:01:47 [INFO] Function after_all call in hook after_all is ok 
+
+2015-05-30 23:01:49 [ERROR] Can not connect to browser: {'instance': False, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:49 [ERROR] Urls been skipped. Cause: Can not connect to browser: {'instance': False, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:49 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+
+2015-05-30 23:01:49 [ERROR] Can not connect to browser: {'instance': False, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:49 [ERROR] Urls been skipped. Cause: Can not connect to browser: {'instance': False, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:01:49 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+
+2015-05-30 23:01:49 [ERROR] Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:01:49 [ERROR] Urls been skipped. Cause: Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+
+2015-05-30 23:01:49 [ERROR] Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:01:49 [ERROR] Urls been skipped. Cause: Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+
+2015-05-30 23:01:49 [ERROR] Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:01:49 [ERROR] Urls been skipped. Cause: Can not connect to browser: {'instance': False, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+
+
+
+2015-05-30 23:01:49 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+
+2015-05-30 23:01:49 [INFO] Save report for item: http://localhost:8081/projects/new  
+
+2015-05-30 23:01:49 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+
+
+
+
+
+
+2015-05-30 23:01:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c010e910>, u'window_size': [u'2048', u'1024'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_2048x1024'} 
+2015-05-30 23:01:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/edit in state: Просто открытые страницы(defaultstate) 
+
+2015-05-30 23:01:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0a03610>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd/features in state: Просто открытые страницы(defaultstate) 
+
+2015-05-30 23:01:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06b9f63610>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:51 [INFO] Start checking url: http://localhost:8081/projects/new in state: Просто открытые страницы(defaultstate) 
+
+2015-05-30 23:01:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06b9f63b90>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd in state: Просто открытые страницы(defaultstate) 
+
+2015-05-30 23:01:51 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0989610>, u'window_size': [u'1024', u'768'], u'description': u'', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'platform': u'ANY', u'browserName': u'phantomjs', u'version': u'', u'phantomjs.page.settings.resourceTimeout': u'3000', u'javascriptEnabled': True}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_1024x768'} 
+2015-05-30 23:01:51 [INFO] Start checking url: http://localhost:8081/projects/Test_project/edit in state: Просто открытые страницы(defaultstate) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2015-05-30 23:02:11 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/bdd/features 
+2015-05-30 23:02:11 [ERROR] Remove empty actual screenshot for url http://localhost:8081/projects/Test_project/bdd/features 
+2015-05-30 23:02:11 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd/features', 'load_time': 20.45, 'id': '329e8c45f53a96b044e6f10df7984ad7291ac400', 'description': ''}. Exception: Actual screenshot is empty. Url: http://localhost:8081/projects/Test_project/bdd/features Path: /home/mihailob/projects/педант/web/data_storage/Test_project/pedant_data/screens/reports/1433026851.15/329e8c45f53a96b044e6f10df7984ad7291ac400/defaultstate/PHANTOMJS_1024x768/actual.png 
+2015-05-30 23:02:11 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+2015-05-30 23:02:11 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd/features 
+2015-05-30 23:02:11 [INFO] Disconnect from selenium browser with id PHANTOMJS_1024x768 
+
+2015-05-30 23:02:11 [INFO] Start screen processing for url http://localhost:8081/projects/new 
+2015-05-30 23:02:11 [ERROR] Remove empty actual screenshot for url http://localhost:8081/projects/new 
+2015-05-30 23:02:11 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/new', 'load_time': 20.45, 'id': 'fbec9a339154239a0b95fc6e46188138aa0d2c96', 'description': ''}. Exception: Actual screenshot is empty. Url: http://localhost:8081/projects/new Path: /home/mihailob/projects/педант/web/data_storage/Test_project/pedant_data/screens/reports/1433026851.15/fbec9a339154239a0b95fc6e46188138aa0d2c96/defaultstate/PHANTOMJS_1024x768/actual.png 
+2015-05-30 23:02:11 [INFO] Save report for item: http://localhost:8081/projects/new  
+2015-05-30 23:02:11 [INFO] Finish checking url http://localhost:8081/projects/new 
+2015-05-30 23:02:11 [INFO] Disconnect from selenium browser with id PHANTOMJS_1024x768 
+
+2015-05-30 23:02:11 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:11 [ERROR] Remove empty actual screenshot for url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:11 [ERROR] Worker got exception for item: {'url': u'http://localhost:8081/projects/Test_project/bdd', 'load_time': 20.45, 'id': '7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04', 'description': ''}. Exception: Actual screenshot is empty. Url: http://localhost:8081/projects/Test_project/bdd Path: /home/mihailob/projects/педант/web/data_storage/Test_project/pedant_data/screens/reports/1433026851.15/7c8aa7d1ce6d70ed22b6df92c035761cc7a31c04/defaultstate/PHANTOMJS_1024x768/actual.png 
+2015-05-30 23:02:11 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+2015-05-30 23:02:11 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:11 [INFO] Disconnect from selenium browser with id PHANTOMJS_1024x768 
+
+2015-05-30 23:02:11 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:11 [INFO] Function my_after_all_method call in hook after_all is ok 
+2015-05-30 23:02:11 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:11 [INFO] Function my_after_all_method call in hook after_all is ok 
+2015-05-30 23:02:11 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:11 [INFO] Function my_after_all_method call in hook after_all is ok 
+
+2015-05-30 23:02:12 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:12 [INFO] Try compare screen for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:12 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+2015-05-30 23:02:12 [INFO] Finish checking url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:12 [INFO] Disconnect from selenium browser with id PHANTOMJS_2048x1024 
+
+2015-05-30 23:02:12 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:12 [INFO] Function my_after_all_method call in hook after_all is ok 
+
+
+
+
+
+2015-05-30 23:02:13 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0a77910>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:02:13 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd/features in state: Просто открытые страницы(defaultstate) 
+2015-05-30 23:02:14 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/bdd/features 
+2015-05-30 23:02:14 [INFO] Try compare screen for url http://localhost:8081/projects/Test_project/bdd/features 
+2015-05-30 23:02:14 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd/features  
+2015-05-30 23:02:14 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd/features 
+
+2015-05-30 23:02:13 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c0a1b650>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:02:13 [INFO] Start checking url: http://localhost:8081/projects/new in state: Просто открытые страницы(defaultstate) 
+
+2015-05-30 23:02:13 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06c010e990>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:02:13 [INFO] Start checking url: http://localhost:8081/projects/Test_project/bdd in state: Просто открытые страницы(defaultstate) 
+2015-05-30 23:02:14 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:14 [INFO] Function my_after_all_method call in hook after_all is ok 
+
+
+
+2015-05-30 23:02:14 [INFO] Disconnect from selenium browser with id PHANTOMJS_800x600 
+
+2015-05-30 23:02:14 [INFO] Start screen processing for url http://localhost:8081/projects/new 
+2015-05-30 23:02:14 [INFO] Try compare screen for url http://localhost:8081/projects/new 
+2015-05-30 23:02:14 [INFO] Save report for item: http://localhost:8081/projects/new  
+2015-05-30 23:02:14 [INFO] Finish checking url http://localhost:8081/projects/new 
+2015-05-30 23:02:14 [INFO] Disconnect from selenium browser with id PHANTOMJS_800x600 
+
+2015-05-30 23:02:14 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:14 [INFO] Function my_after_all_method call in hook after_all is ok 
+
+2015-05-30 23:02:14 [INFO] Connected to browser: {'instance': <selenium.webdriver.remote.webdriver.WebDriver object at 0x7f06b97c9490>, u'window_size': [u'1024', u'768'], u'description': u'Desctiption for phantom1111AZAZA', u'wd_url': u'http://127.0.0.1:4445/wd/hub', u'desired_capabilities': {u'phantomjs.page.settings.resourceTimeout': u'2000'}, u'type': u'PHANTOMJS', u'id': u'PHANTOMJS_800x600'} 
+2015-05-30 23:02:14 [INFO] Start checking url: http://localhost:8081/projects/Test_project/edit in state: Просто открытые страницы(defaultstate) 
+
+
+2015-05-30 23:02:15 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:15 [INFO] Try compare screen for url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:15 [INFO] Save report for item: http://localhost:8081/projects/Test_project/bdd  
+2015-05-30 23:02:15 [INFO] Finish checking url http://localhost:8081/projects/Test_project/bdd 
+2015-05-30 23:02:15 [INFO] Disconnect from selenium browser with id PHANTOMJS_800x600 
+
+2015-05-30 23:02:15 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:15 [INFO] Function my_after_all_method call in hook after_all is ok 
+2015-05-30 23:02:16 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:16 [INFO] Try compare screen for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:16 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+2015-05-30 23:02:16 [INFO] Finish checking url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:16 [INFO] Try call function my_after_all_method on event after_all with args: () 
+2015-05-30 23:02:16 [INFO] Function my_after_all_method call in hook after_all is ok 
+2015-05-30 23:02:16 [INFO] Disconnect from selenium browser with id PHANTOMJS_800x600 
+
+
+2015-05-30 23:02:17 [INFO] Start screen processing for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:17 [INFO] Try compare screen for url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:17 [INFO] Save report for item: http://localhost:8081/projects/Test_project/edit  
+2015-05-30 23:02:17 [INFO] Finish checking url http://localhost:8081/projects/Test_project/edit 
+2015-05-30 23:02:17 [INFO] Disconnect from selenium browser with id PHANTOMJS_1024x768 
+
+2015-05-30 23:02:18 [INFO]  --- Pedant finished at 31-05-2015 02:02:18  
+
+2015-05-30 23:02:18 [INFO] Pedant stopped. Report saved in /home/mihailob/projects/педант/web/data_storage/Test_project/pedant_data/screens/reports directory. Report name: 1433026851.15 
+

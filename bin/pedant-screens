@@ -1,0 +1,54 @@
+#!/usr/bin/python
+import os,sys,uuid,glob,argparse,re,json,atexit,time,inspect
+reload(sys)  # Reload does the trick!
+sys.setdefaultencoding('UTF8') #unicode features
+
+cmd_folder = os.path.realpath( __file__ + '/../../lib/python/' )
+if cmd_folder not in sys.path:
+	sys.path.insert(0, cmd_folder)
+
+#import pedant
+from pedant.screens import Application 
+from pedant import put_json_to_file
+from pedant.states import ExampleState
+import pedant.projects
+
+#parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument( "-m", "--mode", type=str, help="Pedant working mode from config", default=None)
+parser.add_argument( "--no-logging", help="Run pedant without log writing", action='store_true')
+parser.add_argument( "--verbose", help="Verbose output", action='store_true')
+parser.add_argument( "-t", "--threads", type=int, help="Max threads count", default=0)
+parser.add_argument( "-b", "--browsers", nargs='+', help="Browsers list", default=[])
+parser.add_argument( "-s", "--states", nargs='+', help="Project states", default=[])
+parser.add_argument( "-u", "--urls", nargs='+', help="Urls for scanning")
+parser.add_argument( "--no-diffs", help="Need to save differents image", action='store_true', default=False)
+parser.add_argument( "--info", help="Information about current project", action='store_true')
+args = parser.parse_args()
+
+project = pedant.projects.register_project_dir(os.getcwd())
+if args.threads:
+	project.set_threads_count(args.threads)
+if args.browsers:
+	project.filter_browsers(list(args.browsers))
+if args.urls:
+	project.set_urls(list(args.urls))
+if args.no_diffs:
+	project.update_config({'diffs_saving':False})
+app = Application(project=project, verbose=args.verbose, logging= not args.no_logging)
+if args.info:
+	print "Project configuration:"
+	print json.dumps(project.get_config(), sort_keys=True,indent=4, separators=(',', ': '))
+	print "Browsers list:"
+	print json.dumps(project.get_browsers(), sort_keys=True,indent=4, separators=(',', ': '))
+	print "Known states:"
+	states = []
+	for state_obj in app.get_all_states_instances():
+		print state_obj.__dict__
+	sys.exit(0)
+app.build(mode=args.mode, states_ids=args.states).start()
+stat = app.get_statistic()
+if len(stat['TOTAL']) != len(stat['PASSED']):
+	sys.exit(len(stat['FAILED'])+len(stat['SKIPPED']))
+else:
+	sys.exit(0)

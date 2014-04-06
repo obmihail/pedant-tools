@@ -1,0 +1,265 @@
+2015-05-30 23:09:55 [INFO]  --- Pedant started at 31-05-2015 02:09:55  
+
+
+
+
+
+
+2015-05-30 23:09:55 [INFO] 
+Runner  finished and say: 
+ Feature: Showing off behave
+
+  Scenario: Run a simple test
+    Given we have behave installed ... passed in 0.004s
+    When we implement 5 tests ... passed in 0.003s
+    Then behave will test them for us! ... passed in 0.000s
+
+  Scenario Outline: Test with Red Tree Frog -- @1.1 Example_group
+    Given we have behave installed ... passed in 0.001s
+    When we implement 1 tests ... failed in 0.001s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 12, in step_impl
+    assert number > 1 or number == 0
+AssertionError
+
+
+  Scenario Outline: Test with apples -- @1.2 Example_group
+    Given we have behave installed ... passed in 0.000s
+    When we implement 2 tests ... passed in 0.001s
+    Then behave will test it for us! ... failed in 0.001s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 22, in step_impl
+    assert context.failed is False
+AssertionError
+
+
+  Scenario Outline: Test with iPhone -- @2.1 Example 2
+    Given we have behave installed ... passed in 0.001s
+    When we implement 3 tests ... passed in 0.002s
+    Then behave will test it for us! ... failed in 0.001s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 22, in step_impl
+    assert context.failed is False
+AssertionError
+
+
+  Scenario Outline: Test with Galaxy Nexus -- @2.2 Example 2
+    Given we have behave installed ... passed in 0.000s
+    When we implement 4 tests ... passed in 0.000s
+    Then behave will test it for us! ... failed in 0.000s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 22, in step_impl
+    assert context.failed is False
+AssertionError
+
+
+ 
+
+2015-05-30 23:09:55 [INFO] 
+Runner  finished and say: 
+ Функционал: Какая-то фича в моем приложении
+  Контекст: Подготовка приложения
+
+  Структура сценария: Проверка на наборе данных -- @1.1 
+    Если сделать что-нибудь ... passed in 0.003s
+    И сделать еще что-нибудь ... passed in 0.001s
+    То должен получиться какой-то результат ... passed in 0.000s
+    Допустим приложение находится в состоянии "app_state" ... passed in 0.000s
+    Если сделать действие с параметром "param_example1" ... passed in 0.001s
+    То в результате должно быть "result_example1" ... passed in 0.000s
+
+  Структура сценария: Проверка на наборе данных -- @1.2 
+    Если сделать что-нибудь ... passed in 0.000s
+    И сделать еще что-нибудь ... passed in 0.001s
+    То должен получиться какой-то результат ... passed in 0.001s
+    Допустим приложение находится в состоянии "app_state" ... passed in 0.002s
+    Если сделать действие с параметром "param_example2" ... passed in 0.000s
+    То в результате должно быть "result_example2" ... failed in 0.001s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 62, in step_impl
+    assert result != 'result_example2'
+AssertionError
+
+
+ 
+
+
+
+
+2015-05-30 23:09:56 [INFO] 
+Runner configured with browser PHANTOMJS_2048x1024 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/bdd/build и ищет текст Launch BDD Features for Test_project -- @1.3 
+    Допустим открыта главная страница ... passed in 0.314s
+    Если я открою страницу /projects/Test_project/bdd/build ... passed in 0.343s
+    То на странице должен быть заголовок Launch BDD Features for Test_project ... passed in 0.214s
+    Но не должно быть текста Error ... failed in 0.164s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 38, in step_impl
+    assert not should_not_text in context.get_browser().page_source
+AssertionError
+
+
+ 
+
+2015-05-30 23:09:56 [INFO] 
+Runner configured with browser PHANTOMJS_2048x1024 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/edit и ищет текст Edit project: Test_project -- @1.2 
+    Допустим открыта главная страница ... passed in 0.314s
+    Если я открою страницу /projects/Test_project/edit ... passed in 0.194s
+    То на странице должен быть заголовок Edit project: Test_project ... passed in 0.121s
+    Но не должно быть текста Error ... passed in 0.021s
+
+ 
+
+2015-05-30 23:09:56 [INFO] 
+Runner configured with browser PHANTOMJS_2048x1024 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу / и ищет текст Here is a project lists: -- @1.1 
+    Допустим открыта главная страница ... passed in 0.320s
+    Если я открою страницу / ... passed in 0.293s
+    То на странице должен быть заголовок Here is a project lists: ... passed in 0.198s
+    Но не должно быть текста Error ... passed in 0.140s
+
+ 
+
+
+
+2015-05-30 23:09:58 [INFO] 
+Runner configured with browser PHANTOMJS_1024x768 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/bdd/build и ищет текст Launch BDD Features for Test_project -- @1.3 
+    Допустим открыта главная страница ... passed in 0.146s
+    Если я открою страницу /projects/Test_project/bdd/build ... passed in 0.273s
+    То на странице должен быть заголовок Launch BDD Features for Test_project ... passed in 0.179s
+    Но не должно быть текста Error ... failed in 0.022s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 38, in step_impl
+    assert not should_not_text in context.get_browser().page_source
+AssertionError
+
+
+ 
+
+2015-05-30 23:09:58 [INFO] 
+Runner configured with browser PHANTOMJS_1024x768 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/edit и ищет текст Edit project: Test_project -- @1.2 
+    Допустим открыта главная страница ... passed in 0.147s
+    Если я открою страницу /projects/Test_project/edit ... passed in 0.186s
+    То на странице должен быть заголовок Edit project: Test_project ... passed in 0.097s
+    Но не должно быть текста Error ... passed in 0.013s
+
+ 
+
+
+
+
+
+
+
+
+2015-05-30 23:09:59 [INFO] 
+Runner configured with browser PHANTOMJS_1024x768 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу / и ищет текст Here is a project lists: -- @1.1 
+    Допустим открыта главная страница ... passed in 0.253s
+    Если я открою страницу / ... passed in 0.292s
+    То на странице должен быть заголовок Here is a project lists: ... passed in 0.199s
+    Но не должно быть текста Error ... passed in 0.020s
+
+ 
+
+2015-05-30 23:09:59 [INFO] 
+Runner configured with browser PHANTOMJS_800x600 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/bdd/build и ищет текст Launch BDD Features for Test_project -- @1.3 
+    Допустим открыта главная страница ... passed in 0.250s
+    Если я открою страницу /projects/Test_project/bdd/build ... passed in 0.315s
+    То на странице должен быть заголовок Launch BDD Features for Test_project ... passed in 0.209s
+    Но не должно быть текста Error ... failed in 0.044s
+Traceback (most recent call last):
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1456, in run
+    match.run(runner.context)
+  File "/home/mihailob/projects/Ð¿ÐµÐ´Ð°Ð½Ñ/lib/python/behave/model.py", line 1902, in run
+    self.func(context, *args, **kwargs)
+  File "bdd/steps/steps.py", line 38, in step_impl
+    assert not should_not_text in context.get_browser().page_source
+AssertionError
+
+
+ 
+
+2015-05-30 23:09:59 [INFO] 
+Runner configured with browser PHANTOMJS_800x600 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу /projects/Test_project/edit и ищет текст Edit project: Test_project -- @1.2 
+    Допустим открыта главная страница ... passed in 0.296s
+    Если я открою страницу /projects/Test_project/edit ... passed in 0.263s
+    То на странице должен быть заголовок Edit project: Test_project ... passed in 0.130s
+    Но не должно быть текста Error ... passed in 0.078s
+
+ 
+
+2015-05-30 23:10:00 [INFO] 
+Runner configured with browser PHANTOMJS_800x600 finished and say: 
+ Функционал: Тестируем педант
+  Контекст: Подготовка приложения
+
+  Структура сценария: Пользователь просматривает страницу / и ищет текст Here is a project lists: -- @1.1 
+    Допустим открыта главная страница ... passed in 0.261s
+    Если я открою страницу / ... passed in 0.170s
+    То на странице должен быть заголовок Here is a project lists: ... passed in 0.051s
+    Но не должно быть текста Error ... passed in 0.004s
+
+ 
+
+2015-05-30 23:10:00 [INFO]  --- Pedant finished at 31-05-2015 02:10:00  
+
+2015-05-30 23:10:00 [INFO] Pedant stopped. Report saved in /home/mihailob/projects/педант/web/data_storage/Test_project/pedant_data/bdd/reports directory. Report name: 1433027395.31 
+

@@ -1,0 +1,713 @@
+#!/usr/bin/python
+import os, sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+lib_dir = os.path.realpath( __file__ + '/../../lib/python/' )
+sys.path.insert(0, lib_dir) if lib_dir not in sys.path else None
+import glob, shutil, zipfile, uuid, json, cgi, fnmatch, threading, datetime, pedant, argparse
+from bottle import bottle
+from pedant import _DATA_STORAGE_DIR,projects,get_json_from_file
+from pedant.errors import PedantError
+from pedant.web import _TEMPLATES_DIR
+from pedant.screens import Application as ScreensApp
+from pedant.bdd import Application as BddApp
+from PIL import Image
+
+_PEDANT_ROOT_DIR = os.path.dirname(os.path.realpath(os.path.dirname(__file__)))
+_CONFIG = get_json_from_file(os.path.join(_PEDANT_ROOT_DIR, 'bin', 'pedant.conf.json'))
+_TMP_DIR = os.path.join(_PEDANT_ROOT_DIR, 'tmp')
+
+parser = argparse.ArgumentParser()
+parser.add_argument( "--host", type=str, help="Server host", default=None)
+parser.add_argument( "--port", type=int, help="Server port", default=None)
+args = parser.parse_args()
+
+if args.host:
+	_CONFIG['web']['host']=args.host
+if args.port:
+	_CONFIG['web']['port']=args.port
+
+os.makedirs(_TMP_DIR) if not os.path.isdir(_TMP_DIR) else None	
+_RUNNED_PEDANT_THREADS = dict()
+app = bottle.Bottle()
+bottle.TEMPLATE_PATH.insert(0, _TEMPLATES_DIR )
+
+"""
+error ajax responce format
+"""
+def json_error(exception):
+	str_data = str(exception)
+	return bottle.HTTPResponse(status=404, body=str_data)
+	#return {'status': 'ERROR', 'msg': str_data}
+
+"""
+success ajax responce format  
+"""
+def json_data( msg='OK', additional_data={}):
+	answer = {'status': 'OK', 'msg': msg }
+	answer.update(additional_data)
+	return bottle.HTTPResponse(status=200, body=answer)
+	#return answer
+
+"""
+cacther for pages
+"""
+
+def catch_errors(callback):
+	def wrapper(*args, **kwargs):
+		try:
+			return callback(*args, **kwargs)
+		except Exception as exx:
+			return bottle.HTTPResponse(status=404, body=bottle.template('404.tpl'))
+	return wrapper
+
+"""
+cacther for functions
+"""
+def quiet(callback):
+	def wrapper(*args, **kwargs):
+		try:
+			return {'status': 'OK', 'msg': '', 'result': callback(*args, **kwargs)}
+		except Exception as exx:	
+			return {'status': 'ERROR', 'msg': str(exx)}
+	return wrapper
+
+"""
+Ajax decorator. Use in /ajax routes. Catch pedant exceptions for correct json errors
+"""
+def ajax(callback):
+	def wrapper(*args, **kwargs):
+		try:
+			result = callback(*args, **kwargs)
+			return json_data( *result )
+		except Exception as exx:
+			return json_error(exx)
+	return wrapper
+
+@app.route('/assets/<path:path>')
+def callback(path):
+    return bottle.static_file(path, os.path.join(_TEMPLATES_DIR, 'assets'))
+
+@app.route('/projects/<project_id>/thumbnail/<path:path>')
+def callback(project_id, path):
+	#generate image preview
+	sources_dir = pedant.projects.get_project(project_id).get_sources_dir()
+	origin_image_path = os.path.join(sources_dir, path)
+	thumbnail_rel_path = path.replace('.png','.thumbnail.png')
+	thumbnail_abs_path = os.path.join(sources_dir,thumbnail_rel_path)
+	#
+	if os.path.isfile(thumbnail_abs_path):
+		pass
+	else:
+		#generate thumbnail
+		im = Image.open(origin_image_path)
+		im.thumbnail((256,256))
+		im.save(thumbnail_abs_path, "PNG")
+	return bottle.static_file(thumbnail_rel_path,sources_dir,mimetype='image/png')
+
+@app.route('/projects/<project_id>/static/<path:path>')
+def callback(project_id, path):
+	sources_dir = pedant.projects.get_project(project_id).get_sources_dir()
+	print sources_dir,path
+	return bottle.static_file(path, os.path.join(sources_dir))
+
+@app.route('/coming_soon')
+@bottle.view('coming_soon.tpl')
+def coming_soon():
+	return {}
+
+@app.route('/')
+@bottle.view('index.tpl')
+def index():
+	bottle.redirect('/projects')
+
+@app.route('/projects')
+@bottle.view('prj_index.tpl')
+def projects():
+	return { 'search_directory': _PEDANT_ROOT_DIR, 'js_vars': {}}
+
+@app.route('/projects/<project_id>')
+def project_id(project_id):
+	bottle.redirect("/projects/%s/edit"%project_id)
+
+@app.route('/projects/<project_id>/screens')
+def project_id(project_id):
+	bottle.redirect("/projects/%s/screens/reports"%project_id)
+
+@app.route('/projects/new')
+@bottle.view('prj_edit.tpl')
+def new_project():
+	return { 'action': 'add', 'project':'', 'js_vars': {'project': json.dumps('') }}
+
+@app.route('/projects/<project_id>/edit')
+@bottle.view('prj_edit.tpl')
+def edit_project(project_id):
+	#check project exists
+	pedant.projects.get_project(project_id)
+	return {'action': 'update', 'project': project_id, 'js_vars': { 'project': json.dumps(project_id)}}
+
+@app.route('/projects/<project_id>/screens/build')
+@bottle.view('screens_build.tpl')
+def screens_build(project_id):
+	pedant.projects.get_project(project_id)
+	return { 'project': project_id, 'js_vars': { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/bdd')
+@bottle.view('bdd_ref.tpl')
+def bdd_reference(project_id):
+	pedant.projects.get_project(project_id)
+	return { 'project': project_id, 'js_vars': { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/bdd/build')
+@bottle.view('bdd_build.tpl')
+def bdd_build(project_id):
+	pedant.projects.get_project(project_id)
+	return { 'project': project_id, 'js_vars': { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/screens/reports')
+@bottle.view('screens_reports.tpl')
+def screens_reports(project_id):
+	pedant.projects.get_project(project_id)
+	return {'project': project_id, 'js_vars' : { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/bdd/reports')
+@bottle.view('bdd_reports.tpl')
+def bdd_reports(project_id):
+	return {'project': project_id, 'js_vars' : { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/bdd/features')
+@bottle.view('bdd_features.tpl')
+def bdd_features(project_id):
+	return {'project': project_id, 'js_vars' : { 'project': json.dumps(project_id) }}
+
+@app.route('/projects/<project_id>/bdd/reports/last')
+@bottle.view('bdd_report.tpl')
+def project_last_report(project_id):
+	app = pedant.bdd.Application(pedant.projects.get_project(project_id))
+	reports = app.get_reports()
+	bottle.redirect("/projects/%s/bdd/reports"%project_id) if len(reports)<1 else None
+	reports = sorted(reports, key=lambda k: k['timestamp'],reverse=True)
+
+	return {'project': project_id, 
+		'report': reports[0], 
+		'js_vars': { 'project': json.dumps(project_id), 'report': json.dumps(reports[0]) }}
+
+@app.route('/projects/<project_id>/screens/reports/last')
+@bottle.view('screens_report.tpl')
+def screens_report_last(project_id):
+	app = pedant.screens.Application(pedant.projects.get_project(project_id))
+	reports = app.get_reports()
+	bottle.redirect("/projects/%s/screens/reports"%project_id) if len(reports)<1 else None
+	reports = sorted(reports, key=lambda k: k['timestamp'],reverse=True)
+	return {'project': project_id, 
+		'report': reports[0], 
+		'js_vars': { 'project': json.dumps(project_id), 'report': json.dumps(reports[0]) }}
+
+@app.route('/projects/<project_id>/screens/reports/<timestamp>')
+@bottle.view('screens_report.tpl')
+def screens_report_detail(project_id,timestamp):
+	app = pedant.screens.Application(pedant.projects.get_project(project_id))
+	report = { 
+		'pretty': datetime.datetime.fromtimestamp(float(timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f'),
+		'timestamp': timestamp }
+	bottle.redirect("/projects/%s/screens/reports"%project_id) if report not in app.get_reports() else None
+	return {'project': project_id,
+			'report': report,
+			'js_vars': { 'project': json.dumps(project_id), 'report': json.dumps(report) }}
+
+@app.route('/projects/<project_id>/bdd/reports/<timestamp>')
+@bottle.view('bdd_report.tpl')
+def bdd_report_detail(project_id,timestamp):
+
+	app = pedant.bdd.Application(pedant.projects.get_project(project_id))
+	report = { 
+		'pretty': datetime.datetime.fromtimestamp(float(timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f'),
+		'timestamp': timestamp }
+	bottle.redirect("/projects/%s/screens/reports"%project_id) if report not in app.get_reports() else None
+	return {'project': project_id, 
+			'report': report, 
+			'js_vars': { 'project': json.dumps(project_id), 'report': json.dumps(report) }}
+
+@app.route('/projects/<project_id>/screens/approved')
+@bottle.view('screens_approved.tpl')
+def project_approved(project_id):
+	prj = pedant.projects.get_project(project_id)
+	return { 'project': prj.get_name(), 'js_vars': {'project': json.dumps(prj.get_name())} }
+
+"""
+API
+"""
+
+#get default browsers
+@app.route('/api/examples/browsers')
+@ajax
+def get_projects():
+	return ( '', { "browsers": _CONFIG['selenium']['default_browsers'] } )
+
+#get projects list
+@app.route('/api/projects')
+@ajax
+def get_projects():
+	return ( '', { 'projects': pedant.projects.get_projects() } )
+
+#get project configuration
+@app.route('/api/projects/<project_id>')
+@ajax
+def get_project(project_id):
+	prj = pedant.projects.get_project(project_id)
+	return ( '', { "config": prj.get_config(), "urls": prj.get_urls() })
+
+#get example configuration
+#returns configuration and selenium browsers
+@app.route('/api/examples/configuration')
+@ajax
+def get_example_config():
+	prj = pedant.projects.get_empty_project()
+	prj_config = prj.get_default_config()
+	prj_config['name'] = ''
+	return ( '', { 
+			"config": prj_config, 
+			"urls": []
+			})
+
+#create new project
+@app.post('/api/projects/create')
+@ajax
+def add_project():
+	config = json.load(bottle.request.body)['config']
+	urls = json.load(bottle.request.body)['urls']
+	prj = pedant.projects.create_project(config, urls)
+	name = prj.get_name()
+	return ('Project %s created'%name, { "config": prj.get_config(), "urls": prj.get_urls(), "project_id": name })
+
+#update project configuration
+@app.post('/api/projects/<project_id>/update')
+@ajax
+def update_project(project_id):
+	json_post = json.load(bottle.request.body)
+	project = pedant.projects.get_project(project_id)
+	new_config = json_post['config']
+	new_urls = json_post['urls']
+	project.set_config(new_config).set_urls(new_urls).save()
+	return ('Project successfully updated',{ "config": project.get_config(), "urls": project.get_urls(), 'project_id': project.get_name()})
+
+#delete project
+@app.post('/api/projects/<project_id>/delete')
+@ajax
+def remove_project(project_id):
+	#pedant.projects.get_project(project_id,False).remove()
+	#prj_root = os.path.join(_DATA_STORAGE_DIR,project_id)
+	pedant.projects.delete_project(project_id)
+	return ('Project successfully deleted',{})
+
+#get known states for project
+@app.route('/api/examples/screens/states')
+@ajax
+def get_project():
+	prj = pedant.projects.get_empty_project()
+	states = pedant.screens.Application(prj).get_all_states_instances()
+	states_list = []
+	for state in states:
+		states_list.append({
+			'id': state.get_id(),
+			'description': state.get_description(),
+			'urls_regexp': state.get_urls_regexp(),
+			'urls_list': [ item['url'] for item in state.filter_items(prj.get_items_for_scanning()) ],
+			'browsers_regexp': state.get_browsers_regexp(),
+			'browsers_list': state.filter_browsers(prj.get_browsers()),
+			'before_all_methods': state.get_methods_names_list_by_event('before_all'),
+			'before_one_methods': state.get_methods_names_list_by_event('before_one'),
+			'before_screenshot_methods': state.get_methods_names_list_by_event('before_screenshot'),
+			'after_one_methods': state.get_methods_names_list_by_event('after_one'),
+			'after_all_methods': state.get_methods_names_list_by_event('after_all')
+		})
+	return ('',{"states": states_list})
+
+#get known states for project
+@app.route('/api/projects/<project_id>/screens/states')
+@ajax
+def get_project(project_id):
+	prj = pedant.projects.get_project(project_id)
+	states = pedant.screens.Application(prj).get_all_states_instances()
+	states_list = []
+	for state in states:
+		states_list.append({
+			'id': state.get_id(),
+			'description': state.get_description(),
+			'urls_regexp': state.get_urls_regexp(),
+			'urls_list': [ item['url'] for item in state.filter_items(prj.get_items_for_scanning()) ],
+			'browsers_regexp': state.get_browsers_regexp(),
+			'browsers_list': state.filter_browsers(prj.get_browsers()),
+			'before_all_methods': state.get_methods_names_list_by_event('before_all'),
+			'before_one_methods': state.get_methods_names_list_by_event('before_one'),
+			'before_screenshot_methods': state.get_methods_names_list_by_event('before_screenshot'),
+			'after_one_methods': state.get_methods_names_list_by_event('after_one'),
+			'after_all_methods': state.get_methods_names_list_by_event('after_all')
+		})
+	return ('',{"states": states_list})
+
+#get bdd features for project
+@app.route('/api/projects/<project_id>/bdd/features')
+@ajax
+def bdd_features(project_id):
+	prj = pedant.projects.get_project(project_id)
+	config = prj.get_config()
+	bdd_app = pedant.bdd.Application(prj)
+	features_objs = bdd_app.get_features()
+	features = [pedant.bdd.get_feature_dict(feature) for feature in features_objs]
+	return ('',{"features": features})
+
+#get bdd reference for project
+@app.route('/api/projects/<project_id>/bdd/reference')
+@ajax
+def bdd_help(project_id):
+	prj = pedant.projects.get_project(project_id)
+	config = prj.get_config()
+	bdd_app = pedant.bdd.Application(prj)
+	return ('',{"reference": bdd_app.get_bdd_info()})
+
+
+#screenshots build
+@app.route('/api/projects/<project_id>/screens/build/start', method='POST')
+@ajax
+def start_project(project_id):
+	mode = json.load(bottle.request.body)['mode']
+	threads = json.load(bottle.request.body)['threads']
+	diffs_saving = json.load(bottle.request.body)['diffs_saving']
+	if not _RUNNED_PEDANT_THREADS.has_key(project_id) :
+		_RUNNED_PEDANT_THREADS[project_id] = {}
+	if _RUNNED_PEDANT_THREADS[project_id].has_key("screens") and _RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].status == pedant.application.PedantApplication._RUNNED:
+		pass
+	else:
+		project_o = pedant.projects.get_project(project_id)
+		if int(threads):
+			project_o.set_threads_count(int(threads))
+		project_o.update_config({'diffs_saving':diffs_saving})
+		app = pedant.screens.Application( logging=True, verbose=False, project=project_o )
+		app.build(mode=mode)
+		#t = app.start_in_thread()
+		t = threading.Thread(target=app.quiet_start)
+		t.start()
+		t.join(0.1)
+		if app.status != pedant.application.PedantApplication._RUNNED :
+			raise app.get_exception()
+		_RUNNED_PEDANT_THREADS[project_id]["screens"] = {'app': app,'thread': t}
+	return ('Project been started',{})
+
+
+#bdd build
+@app.route('/api/projects/<project_id>/bdd/build/start', method='POST')
+@ajax
+def start_bdd(project_id):
+	#mode = json.load(bottle.request.body)['mode']
+	if not _RUNNED_PEDANT_THREADS.has_key(project_id) :
+		_RUNNED_PEDANT_THREADS[project_id] = {}
+	if _RUNNED_PEDANT_THREADS[project_id].has_key("bdd") and _RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].get_status() == pedant.application.PedantApplication._RUNNED:
+		pass
+	else:
+		project_o = pedant.projects.get_project(project_id)
+		browsers = json.load(bottle.request.body)['browsers']
+		filter_d = json.load(bottle.request.body)['filter']
+		threads = json.load(bottle.request.body)['threads']
+		#set browsers to project
+		project_o.set_browsers(browsers)
+		if int(threads):
+			project_o.set_threads_count(int(threads))
+		app = pedant.bdd.Application(logging=True, verbose=False, project=project_o).build(filter_d=filter_d)
+		t = threading.Thread(target=app.quiet_start)
+		t.start()
+		t.join(0.1)
+		if app.get_status() != pedant.application.PedantApplication._RUNNED:
+			raise app.get_exception()
+		_RUNNED_PEDANT_THREADS[project_id]["bdd"] = {'app': app,'thread': t}
+	return ('Project been started',{})
+
+
+#custom screenshots build
+@app.route('/api/projects/<project_id>/screens/build/start/custom', method='POST')
+@ajax
+def start_project_custom(project_id):
+	post = json.load(bottle.request.body)
+	browsers = post['browsers']
+	urls = post['urls']
+	states = post['states']
+	threads = post['threads']
+	diffs_saving = json.load(bottle.request.body)['diffs_saving']
+	if not _RUNNED_PEDANT_THREADS.has_key(project_id):
+		_RUNNED_PEDANT_THREADS[project_id] = {}
+	if _RUNNED_PEDANT_THREADS[project_id].has_key("screens") and _RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].status == pedant.application.PedantApplication._RUNNED:
+		pass
+	else:
+		project_o = pedant.projects.get_project(project_id)
+		if int(threads):
+			project_o.set_threads_count(int(threads))
+		project_o.update_config({'diffs_saving':diffs_saving})
+		project_o.set_browsers(browsers).set_urls(urls)
+		app = pedant.screens.Application(logging=True, verbose=False, project=project_o).build(states_ids=states)
+		t = threading.Thread(target=app.quiet_start)
+		t.start()
+		t.join(0.1)
+		if app.get_status() != pedant.application.PedantApplication._RUNNED:
+			raise app.get_exception()
+		_RUNNED_PEDANT_THREADS[project_id]["screens"] = {'app': app,'thread': t}
+	return ('Project been started',{})
+
+@app.post('/api/projects/<project_id>/screens/build/stop')
+@ajax
+def stop_screens(project_id):
+	#find instance
+	message = 'Stop procedure runned. Wait while project been stopped'
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key("screens"):
+		_RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].stop()
+	else:
+		message = 'Project not runned'
+	return (message,{})
+
+@app.post('/api/projects/<project_id>/bdd/build/stop')
+@ajax
+def stop_bdd(project_id):
+	#find instance
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key("bdd"):
+		_RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].stop()
+	return ('Stop procedure runned. Wait while project been stopped',{})
+
+@app.route('/api/projects/<project_id>/screens/logs')
+@ajax
+def get_compare_logs(project_id):
+	return pedant.screens.Application(pedant.projects.get_project(project_id)).get_logs()
+
+@app.route('/api/projects/<project_id>/bdd/logs')
+@ajax
+def get_bdd_logs(project_id):
+	return pedant.projects.get_project(project_id).get_logs()
+
+#get compare screenshots current status
+@app.route('/api/projects/<project_id>/screens/build/status')
+@ajax
+def get_screens_status(project_id):
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key('screens'):
+		return ('',{
+			'_status':_RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].status,
+			'stat': _RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].get_statistic(),
+			'log': _RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].get_current_log()
+			})
+	else:
+		return ('',{ '_status':"n\a", 'stat': {}, 'log': ''})
+#get compare screenshots current status
+@app.route('/api/projects/<project_id>/bdd/build/status')
+@ajax
+def get_bdd_status(project_id):
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key("bdd"):
+		return ('',{
+			'_status':_RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].status,
+			'stat': _RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].get_statistic(),
+			'log': _RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].get_current_log()
+			})
+	else:
+		return ('',{ '_status':"n\a", 'stat': {}, 'log': ''})
+
+#get compare screenshots processing log
+@app.route('/api/projects/<project_id>/screens/log/<timestamp>')
+@ajax
+def get_screens_log(project_id,timestamp):
+	prj = pedant.projects.get_project(project_id)
+	state = 'N\A'
+	content = pedant.screens.Application(prj).get_log(timestamp)
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key("screens"):
+		if _RUNNED_PEDANT_THREADS[project_id]["screens"]["app"].is_runned():
+			state = 'RUNNED'
+		else:
+			state = 'STOPPED'
+			del _RUNNED_PEDANT_THREADS[project_id]["screens"]
+	return ('', {'state': state, 'content': content})
+
+#get compare screenshots processing log
+@app.route('/api/projects/<project_id>/bdd/logs/<timestamp>')
+@ajax
+def get_bdd_log(project_id,timestamp):
+	prj = pedant.projects.get_project(project_id)
+	state = 'N\A'
+	content = pedant.bdd.Application(prj).get_log(timestamp)
+	if _RUNNED_PEDANT_THREADS.has_key(project_id) and _RUNNED_PEDANT_THREADS[project_id].has_key("bdd"):
+		if _RUNNED_PEDANT_THREADS[project_id]["bdd"]["app"].is_runned():
+			state = 'RUNNED'
+		else:
+			state = 'STOPPED'
+			del _RUNNED_PEDANT_THREADS[project_id]["bdd"]
+	return ('', {'state': state, 'content': content})
+
+#delete approved image
+@app.post('/api/projects/<project_id>/screens/approved/delete')
+@ajax
+def delete_approved(project_id):
+	project = pedant.projects.get_project(project_id)
+	items = json.load(bottle.request.body)['items']
+	app = pedant.screens.Application(project)
+	items_result = []
+	for item in items:
+		res = delete_screens_approved_image(app,item['item_id'], item['state_id'], item['browser_id'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+#delete approved image for step
+@app.post('/api/projects/<project_id>/bdd/approved/delete')
+@ajax
+def delete_approved(project_id):
+	items = json.load(bottle.request.body)['items']
+	project = pedant.projects.get_project(project_id)
+	app = pedant.bdd.Application(project)
+	items_result = []
+	for item in items:
+		res = delete_bdd_approved_image(app,item['browser_id'], item['filename'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+#get approved images list for project
+@app.route('/api/projects/<project_id>/screens/approved')
+@ajax
+def get_approved(project_id):
+	return ('',{ 'project': project_id, 'items': pedant.screens.Application(pedant.projects.get_project(project_id)).get_approved_images() })
+
+#get approved images list for project
+@app.route('/api/projects/<project_id>/bdd/approved')
+@ajax
+def get_approved(project_id):
+	return ('',{ 'project': project_id, 'items': pedant.bdd.Application(pedant.projects.get_project(project_id)).get_approved_images() })
+
+@quiet
+def approve_screens_image(app,*args):
+	return app.approve_image(*args)
+
+@quiet
+def delete_screens_approved_image(app,*args):
+	return app.delete_approved_image(*args)
+
+@quiet
+def cancel_approve_screens_image(app,*args):
+	return app.cancel_approve_image(*args)
+
+@quiet
+def approve_bdd_image(app,*args):
+	return app.approve_image(*args)
+
+@quiet
+def cancel_approve_bdd_image(app,*args):
+	return app.cancel_approve_image(*args)
+
+@quiet
+def delete_bdd_approved_image(app,*args):
+	return app.delete_approved_image(*args)
+
+#approve item
+@app.post('/api/projects/<project_id>/screens/reports/<timestamp>/approve')
+@ajax
+def ajax_approve(project_id, timestamp):
+	items = json.load(bottle.request.body)['items']
+	app = pedant.screens.Application(pedant.projects.get_project(project_id))
+	items_result = []
+	for item in items:
+		res = approve_screens_image(app,timestamp, item['item_id'], item['state_id'], item['browser_id'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+#approve item
+@app.post('/api/projects/<project_id>/bdd/reports/<timestamp>/approve')
+@ajax
+def ajax_approve(project_id, timestamp):
+	items = json.load(bottle.request.body)['items']
+	app = pedant.bdd.Application(pedant.projects.get_project(project_id))
+	items_result = []
+	for item in items:
+		res = approve_bdd_image(app,timestamp, item['browser_id'], item['filename'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+#cancel approve item
+@app.post('/api/projects/<project_id>/screens/reports/<timestamp>/cancel-approve')
+@ajax
+def cancel_approve(project_id,timestamp):
+	items = json.load(bottle.request.body)['items']
+	app = pedant.screens.Application(pedant.projects.get_project(project_id))
+	items_result = []
+	for item in items:
+		res = cancel_approve_screens_image(app,timestamp, item['item_id'], item['state_id'], item['browser_id'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+#cancel approve item
+@app.post('/api/projects/<project_id>/bdd/reports/<timestamp>/cancel-approve')
+@ajax
+def cancel_approve(project_id,timestamp):
+	items = json.load(bottle.request.body)['items']
+	app = pedant.bdd.Application(pedant.projects.get_project(project_id))
+	items_result = []
+	for item in items:
+		res = cancel_approve_bdd_image(app,timestamp, item['browser_id'], item['filename'])
+		items_result.append(res)
+	return ('',{'items':items_result})
+
+@app.route('/api/projects/<project_id>/screens/reports')
+@ajax
+def get_reports_list(project_id):	
+	return ('Reports for project %s' %project_id, {'reports': pedant.screens.Application(pedant.projects.get_project(project_id)).get_reports() })
+
+@app.route('/api/projects/<project_id>/bdd/reports')
+@ajax
+def get_reports_list(project_id):	
+	return ('Reports for project %s' %project_id, {'reports': pedant.bdd.Application(pedant.projects.get_project(project_id)).get_reports() })
+
+@app.route('/api/projects/<project_id>/screens/reports/<timestamp>')
+@ajax
+def get_report(project_id,timestamp):
+	return ('Report for project %s'%project_id, {'items': pedant.screens.Application(pedant.projects.get_project(project_id)).get_report(timestamp)} )
+
+@app.route('/api/projects/<project_id>/bdd/reports/<timestamp>')
+@ajax
+def get_report(project_id,timestamp):
+	return ('Report for project %s'%project_id, {'items': pedant.bdd.Application(pedant.projects.get_project(project_id)).get_report(timestamp)} )
+
+@app.post('/api/projects/<project_id>/screens/reports/<timestamp>/delete')
+@ajax
+def delete_report(project_id,timestamp):
+	pedant.screens.Application(pedant.projects.get_project(project_id)).delete_report(timestamp)
+	return ('Removed',{})
+
+@app.post('/api/projects/<project_id>/bdd/reports/<timestamp>/delete')
+@ajax
+def delete_report(project_id,timestamp):
+	pedant.bdd.Application(pedant.projects.get_project(project_id)).delete_report(timestamp)
+	return ('Removed',{})
+
+#scan projects on specific path
+@app.post('/api/projects/attach')
+@ajax
+def find_projects():
+	root_dir = json.load(bottle.request.body)['path']
+	msg = ''
+	if root_dir and os.path.isdir(root_dir):
+		files = recursive_projects_search(root_dir)
+		result = {}
+		messages = []
+		if len(files) < 1:
+			messages.append("Projects not found in directory %s"%root_dir)
+		for file in files:
+			try:
+				prj_dir = os.path.dirname(file)
+				prj_o = pedant.projects.register_project_dir(prj_dir.encode('utf-8'))
+			except Exception as e:
+				messages.append('Project %s was skipped. Cause: %s'%(prj_dir, str(e)))
+				continue
+			messages.append("Project %s (re)registered"%prj_o.get_name())
+		return ('<br>'.join(messages), {"projects": pedant.projects.get_projects()})
+	raise PedantError('path %s not found'%root_dir)
+
+def recursive_projects_search(dirname):
+	matches = []
+	for root, dirnames, filenames in os.walk( dirname ):
+		for filename in fnmatch.filter(filenames, 'pedant.json'):
+			if not root.encode('utf-8').startswith(_DATA_STORAGE_DIR):
+				matches.append(os.path.join(root, filename))
+	return matches
+
+bottle.run(app=app, host=_CONFIG['web']['host'], port=_CONFIG['web']['port'], debug=True)
