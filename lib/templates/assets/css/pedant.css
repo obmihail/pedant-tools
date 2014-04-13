@@ -1,0 +1,52 @@
+
+.pedant-icon {
+	width: 50px;
+	height: 50px;
+	display: inline-block;
+	background-size: cover;
+}
+
+.no-screenshot {
+	background-image: url("/assets/img/no-screenshot.png");	
+}
+
+.approve-it {
+	background-image: url("/assets/img/approve-it.png");
+}
+
+.cancel-approve {
+	background-image: url("/assets/img/cancel-approve.png");
+}
+
+.delete-item {
+	background-image: url("/assets/img/deletered.png");	
+}
+
+td.screenshot > a > img {
+	width: 90px;
+	height: 90px;
+}
+
+td.approved > i.status-approve404, img.status-approve404 {
+	border: 5px #F75353 outset;
+	margin: 0;
+}
+
+td.approved_report > i.status-approve404, img.status-approve404 {
+	border: 5px #F75353 outset;
+	margin: 0;
+}
+
+td.actual > i.status-diff,img.status-diff, {
+	border: 5px #F75353 outset;
+	margin: 0;
+}
+
+td.diff > i.status-diff,img.status-diff {
+	border: 5px #F75353 outset;
+	margin: 0;
+}
+
+.table tbody tr.selected>td{
+	background-color:#CBE8F8;
+}
