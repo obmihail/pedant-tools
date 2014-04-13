@@ -1,51 +1,11 @@
 pedant-tool
 ==========
 
-## [UBUNTU-Install]
+Pedant - it's a simple tool for screenshot based testing of web interface. ( it's a pedant ) 
+Pedant take screenshot and compare with approved screenshot version. ( it's a cool )
+Pedant have web interface and little local web server ( it's convenient )
+Pedant have console tool for launch test ( it's a simple )
+Pedant have parallel work mode for big count of items ( it's fast )
+Pedant can work with many browsers ( it's wonderfull )
 
-### install pip,git
-sudo apt-get install python-pip python-dev build-essential git
-
-### clone this repository in your home directory, for example, ~/pedant-tool/
-mkdir pedant-tool && git clone git@github.com:obmihail/pedant-tool.git ~/pedant-tool/
-
-### install selenium for python
-pip install --install-option="--install-purelib=~/pedant-tool/lib/python" -U selenium
-
-### create aliases for checking
-1. For creating temp aliases: type in your command line
-
-- alias pedant='python ~/pedant-tool/bin/pedant'
-
-- alias pedant-server='python ~/pedant-tool/bin/pedant-server.py'
-
-2. For persistant aliases put this strings in your ~/.bashrc file
-
-- alias pedant='python ~/pedant-tool/bin/pedant'
-
-- alias pedant-server='python ~/pedant-tool/bin/pedant-server.py'
-
-
-Wonderfull! Now you can use pedant!
-
-## [Ubuntu-usage]
-
-Try run pedant web-server
-Now let's try start pedant-server
-run "pedant-server" command
-You should see this message:
-
-"""
-Bottle v0.13-dev server starting up (using WSGIRefServer())...
-Listening on http://localhost:8081/
-Hit Ctrl-C to quit.
-"""
-
-If you open http://localhost:8081/ in your browser you should see pedant main page and projects list
-
-
-Now let's try tun cli-script:
-- download and run [[phantomjs_run]] on localhost:4445
-
-1. run this command: "cd ~/pedant_install_dir/test_project/ && pedant"
-2. when you see "Pedant finished at".open page "http://localhost:8081/test_project/reports/last" in browser, you should see report for last scanning
+Please, see [[wiki]] for details and manuals
