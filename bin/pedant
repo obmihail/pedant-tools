@@ -12,7 +12,6 @@ from pedant.cli_app import Application
 def getSourcesList( mask , prj_name ):
 	local_src_list = os.getcwd() + os.sep + 'sources.list'
 	sources = []
-	print local_src_list
 	if os.path.isfile(local_src_list):
 		loc_sources = {}
 		execfile( local_src_list , loc_sources )
