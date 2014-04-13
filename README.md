@@ -21,9 +21,9 @@ pip install --install-option="--install-purelib=~/pedant-tool/lib/python" -U sel
 
 2. For persistant aliases put this strings in your ~/.bashrc file
 
-- alias pedant='python /home/mihailob/projects/pedant-tool/bin/pedant.py'
+- alias pedant='python ~/pedant-tool/bin/pedant.py'
 
-- alias pedant-server='python /home/mihailob/projects/pedant-tool/bin/pedant-server.py'
+- alias pedant-server='python ~/pedant-tool/bin/pedant-server.py'
 
 
 Wonderfull! Now you can use pedant!
