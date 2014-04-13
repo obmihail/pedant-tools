@@ -48,4 +48,4 @@ Now let's try tun cli-script:
 - download and run [[phantomjs_run]] on localhost:4445
 
 1. run this command: "cd ~/pedant_install_dir/test_project/ && pedant"
-2. when you see "Pedant finished at".open page "http://localhost:8081/pedanttestproject/reports/last" in browser, you should see report for last scanning
+2. when you see "Pedant finished at".open page "http://localhost:8081/test_project/reports/last" in browser, you should see report for last scanning
