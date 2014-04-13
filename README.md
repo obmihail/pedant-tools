@@ -15,13 +15,13 @@ pip install --install-option="--install-purelib=~/pedant-tool/lib/python" -U sel
 ### create aliases for checking
 1. For creating temp aliases: type in your command line
 
-- alias pedant='python ~/pedant-tool/bin/pedant.py'
+- alias pedant='python ~/pedant-tool/bin/pedant'
 
 - alias pedant-server='python ~/pedant-tool/bin/pedant-server.py'
 
 2. For persistant aliases put this strings in your ~/.bashrc file
 
-- alias pedant='python ~/pedant-tool/bin/pedant.py'
+- alias pedant='python ~/pedant-tool/bin/pedant'
 
 - alias pedant-server='python ~/pedant-tool/bin/pedant-server.py'
 
