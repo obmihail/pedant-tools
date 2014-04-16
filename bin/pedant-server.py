@@ -205,7 +205,8 @@ def index(project,timestamp,item,browser):
 		os.rename( report_dir + 'diff.bckp' , report_dir + 'diff.png' )
 		diff_img_web = '/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'diff.png'
 
-	#restore report.json 
+	#restore report.json
+	if os.path.isfile( report_dir + 'report.json' ) os.remove( report_dir + 'report.json' )
 	os.rename( report_dir + 'report.bckp' , report_dir + 'report.json' )
 	#read report
 	json_file=open(report_dir + 'report.json')
