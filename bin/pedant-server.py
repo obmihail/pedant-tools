@@ -126,9 +126,13 @@ def index(project,timestamp,item,browser):
 	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
 	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
 	#if approved_report exists - move it ot {original_path}.bckp
+	if os.path.isfile( report_dir + 'approved_report.bckp' ):
+		os.remove( report_dir + 'approved_report.bckp' )
 	if os.path.isfile( report_dir + 'approved_report.png'):
 		os.rename( report_dir + 'approved_report.png' , report_dir + 'approved_report.bckp' )
 	#backup diff
+	if os.path.isfile( report_dir + 'diff.bckp' ):
+		os.remove( report_dir + 'diff.bckp' )
 	if os.path.isfile( report_dir + 'diff.png'):
 		os.rename( report_dir + 'diff.png' , report_dir + 'diff.bckp' )
 	#backup global approved
@@ -136,7 +140,7 @@ def index(project,timestamp,item,browser):
 		os.rename( approved_path, approved_path + '.bckp' )
 	#backup json
 	if os.path.isfile( report_dir + 'report.bckp' ):
-		report_dir + 'report.bckp'
+		os.remove( report_dir + 'report.bckp' )
 	os.rename( report_dir + 'report.json', report_dir + 'report.bckp' )
 	#get original json data
 	json_file=open(report_dir + 'report.bckp')
@@ -202,6 +206,8 @@ def index(project,timestamp,item,browser):
 		os.rename( report_dir + 'approved_report.bckp' , report_dir + 'approved_report.png' )
 		approved_report_img_web = '/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png'
 	
+	if os.path.isfile( report_dir + 'diff.png' ):
+		os.remove( report_dir + 'diff.png' )
 	#restore backup diff
 	if os.path.isfile( report_dir + 'diff.bckp' ):
 		os.rename( report_dir + 'diff.bckp' , report_dir + 'diff.png' )
