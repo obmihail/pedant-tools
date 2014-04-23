@@ -7,10 +7,12 @@ Pedant take screenshot and compare with approved screenshot version. ( it's a co
 
 Pedant have web interface and little local web server ( it's convenient )
 
-Pedant have console tool for launch test ( it's a simple )
+Pedant have console tool for crawl your website ( it's a simple )
+
+Pedant have console tool for launch test ( it's a very simple )
 
 Pedant have parallel work mode for big count of items ( it's fast )
 
 Pedant can work with many browsers ( it's wonderfull )
 
-Please, see [[wiki]] for details and manuals
+Please, see (wiki) for details and manuals
