@@ -1,4 +1,4 @@
-import time,worker,sys,datetime
+import time,screen_worker,sys,datetime
 
 class Application:
 	
@@ -28,20 +28,21 @@ class Application:
 			if workers_cnt > config['max_workers']:
 				workers_cnt = config['max_workers']
 			items = self.chunkList(config['items'],workers_cnt)
-			for i in range( workers_cnt ):
-				inst = worker.worker( config['browsers'][0] , items[i] , timestamp , config['data_storage_root'] )
-				self.workers.append( inst )
+			browsers = [ config['browsers'] for bro in range(workers_cnt) if True ]
+			# for i in range( workers_cnt ):
+			# 	inst = screen_worker.screen_worker( config['browsers'][0] , items[i] , timestamp , config['data_storage_root'] )
+			# 	self.workers.append( inst )
 		#else create normal workers
 		else:	
 			#calculate needle workers count
 			workers_cnt = len( config['browsers'] )
 			if workers_cnt > config['max_workers']:
 				workers_cnt = config['max_workers']
-
 			browsers = self.chunkList( config['browsers'],workers_cnt )
-			for i in range( workers_cnt ):
-				inst = worker.worker( browsers[i][0] , config['items'], timestamp, config['data_storage_root'] )
-				self.workers.append( inst )
+		for i in range( workers_cnt ):
+
+			inst = screen_worker.screen_worker( browsers[i][0] , config['items'], timestamp, config['data_storage_root'] )
+			self.workers.append( inst )
 
 	def calculate_workers_by_items(self,items):
 		#normal items count for one for worker. Calculated on core i7, ssd and 8gb ram in ubuntu 12.10 ;)

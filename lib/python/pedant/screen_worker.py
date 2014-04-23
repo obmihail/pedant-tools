@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os,sys,json,hashlib,Image,ImageChops,ImageDraw,time,uuid,urllib2,shutil
 
-class worker(threading.Thread):
+class screen_worker(threading.Thread):
 
 	browser = {}
 
@@ -23,7 +23,7 @@ class worker(threading.Thread):
 
 	def __init__(self, browser, items, timestamp, data_storage_root ):
 
-		super(worker, self).__init__()
+		super(screen_worker, self).__init__()
 		#lol, copy require, i search this bug 3 hours :(
 		self.browser = browser.copy()
 		#launch browser
@@ -35,7 +35,7 @@ class worker(threading.Thread):
 			#print caps
 			try:
 				self.browser['instance'] = webdriver.Remote(  
-						command_executor=browser['wd_url'],
+						command_executor=str(browser['wd_url']),
 						desired_capabilities=caps,
 						keep_alive=False )
 			except urllib2.URLError:
@@ -68,13 +68,10 @@ class worker(threading.Thread):
 				self.browser['instance'].execute_script( script )
 			#wait js conditions
 			for wait_condition in item['wait_scripts']:
-				need_work = True
 				w_time = 0
-				while need_work:
-					if self.browser['instance'].execute_script( script ):
-						need_work = False
-					if w_time > 3:
-						need_work = False
+				while True:
+					if self.browser['instance'].execute_script( script ) or w_time > 3:
+						break
 					time.sleep(1)
 					w_time += 1
 			#save actual screenshot

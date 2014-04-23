@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import __init__,os,sys,uuid,glob,argparse,re
+import __init__,os,sys,uuid,glob,argparse,re,json
 
 # cmd_folder = os.path.realpath( __file__ + '/../../lib/python/' )
 # if cmd_folder not in sys.path:
@@ -10,25 +10,21 @@ from pedant.cli_app import Application
 
 #get list for sources need scanning
 def getSourcesList( mask , prj_name ):
-	local_src_list = os.getcwd() + os.sep + 'sources.list'
+	local_src_list = os.getcwd() + os.sep + 'urls.json'
 	sources = []
 	if os.path.isfile(local_src_list):
-		loc_sources = {}
-		execfile( local_src_list , loc_sources )
-		for item in loc_sources['sources']:
-			name = re.sub('[^0-9a-zA-Z_]+', '_', item['url']) 
-			if not item.has_key('scripts'):
-				item['scripts'] = []
-			if not item.has_key('wait_scripts'):
-				item['wait_scripts'] = []
+		loc_sources = json.load( open( local_src_list ) )
+
+		for item in loc_sources:
+			name = re.sub('[^0-9a-zA-Z_]+', '_', item) 
 				
 			sources.append(
 				{
-					'url' : item['url'],
+					'url' : item,
 					'name' : name,
 					'unid' : name,
-					'scripts' : item['scripts'],
-					'wait_scripts' : item['wait_scripts'],
+					'scripts' : [],
+					'wait_scripts' : [],
 				} )
 	#else get pathes from current directory
 	else:
@@ -45,22 +41,31 @@ def getSourcesList( mask , prj_name ):
 	if len( sources ) < 1:
 		print 'Pedant not found items for checking in current folder'
 		sys.exit(0)
-	#print sources[0]
-	#sys.exit(0)
 	return sources
 
 #get config
 def buildConf():
-	config = {}
+	local_conf_file = os.getcwd() + os.sep + "pedant.json"
 	local_config = {}
-	local_conf_file = os.path.realpath( os.getcwd() + os.sep + "pedant.conf" )
 	#read global config
-	if __name__ == "__main__":
-	    execfile( os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf"), config)
+	config = json.load( open( os.path.dirname(os.path.realpath(__file__)) + os.sep + "pedant.conf.json" ) )
 	#read local config
-	if __name__ == "__main__" and os.path.isfile(local_conf_file):
-		execfile( local_conf_file , config )
-		#config = dict( config.items() + local_config.items() )
+	if os.path.isfile( local_conf_file ):
+		local_config = json.load( open( local_conf_file ) )
+	#config = dict( config.items() + local_config.items() )
+	config = dict( config['screens'].items() + local_config.items() )
+
+	#your project name. Default - current directory name
+	prj_name = os.path.basename( os.getcwd() )
+	if config.has_key("prj_name") and config['prj_name']:
+		prj_name = config['prj_name']
+
+	#where pedant save\search all results
+	config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
+	#where is locate data_storage folder for curent project
+	#do not change this in your project config. Web server need this parameter for locate static files
+	config[ 'prj_data_storage' ] = config[ 'data_storage_root' ] + os.sep + prj_name
+
 	return config
 
 
@@ -75,7 +80,7 @@ def buildBrowsersList( browsers ):
 			sys.exit(0)
 		browser['unid'] = unid
 		if not browser.has_key( 'info' ):
-			browser['info'] = 'no info'
+			browser['info'] = 'no info'	
 		setted[ unid ] = browser
 	#print setted.values()
 	#sys.exit(0)
@@ -90,7 +95,7 @@ config = buildConf()
 browsers = buildBrowsersList( config[ args.mode ] )
 
 app = Application( {
-		'items':getSourcesList( config['url_mask'] , config[ 'prj_name' ] ), 
+		'items':getSourcesList( config['url_static_mask'] , config[ 'prj_name' ] ), 
 		'max_workers': config['max_workers'], 
 		'browsers':browsers, 
 		'data_storage_root':config['prj_data_storage'] } )

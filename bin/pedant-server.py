@@ -7,7 +7,10 @@ templates_dir = os.path.realpath( __file__ + os.sep + '..' + os.sep + '..' + os.
 
 config = {}
 
-execfile( os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf" ), config)
+#execfile( os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf" ), config)
+config = json.load( open(os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf.json" ) ))
+config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
+config[ 'tmp_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'tmp')
 
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
@@ -289,4 +292,4 @@ def index(project):
 			z.extractall( prj_root )
 	return json_error( "Sorry zip file are broken. Do you have another file?")
 
-bottle.run(host=config['web_host'], port=config['web_port'])
+bottle.run(host=config['web']['host'], port=config['web']['port'])
