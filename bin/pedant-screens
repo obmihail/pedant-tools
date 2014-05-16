@@ -59,6 +59,8 @@ def buildConf():
 	prj_name = os.path.basename( os.getcwd() )
 	if config.has_key("prj_name") and config['prj_name']:
 		prj_name = config['prj_name']
+	else:
+		config['prj_name'] = prj_name
 
 	#where pedant save\search all results
 	config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )

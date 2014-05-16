@@ -1,8 +1,0 @@
-sources = [
-	
-	{ 'url': 'http://ya.ru' },
-	{ 'url': 'http://ya.com' },
-	{ 'url': 'http://google.ru' },
-	{ 'url': 'http://google.com' },
-
-]
