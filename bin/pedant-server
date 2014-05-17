@@ -3,23 +3,19 @@ import __init__,os,sys,glob,shutil,zipfile,uuid,json
 from bottle import bottle
 
 templates_dir = os.path.realpath( __file__ + os.sep + '..' + os.sep + '..' + os.sep + 'lib'+ os.sep +'templates' )
-#static_root = os.path.realpath( __file__ + os.sep + '..' + os.sep + '..' + os.sep + 'web'+ os.sep +'assets' )
 
-config = {}
-
-#execfile( os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf" ), config)
 config = json.load( open(os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf.json" ) ))
 config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
 config[ 'tmp_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'tmp')
+#create tmp dir
+if not os.path.isdir( config['tmp_root'] ):
+		os.makedirs( config['tmp_root'] )
 
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
 
 def template( template , **kwargs ):
 	return bottle.template( ''.join(open(templates_dir + os.sep + template, 'r').readlines()), kwargs )
-
-def json_success( message ):
-	return { 'status':'OK', 'msg':message }
 
 def json_error( message ):
 	return { 'status':'WARN', 'msg':message }
@@ -163,6 +159,7 @@ def index(project,timestamp,item,browser):
 	obj.close
 	#additional info
 	json_data['status'] = "OK"
+	#images html
 	json_data['images'] = {
 		'approved': template( 
 						template='prj_report_image.tpl', 
@@ -190,7 +187,7 @@ def index(project,timestamp,item,browser):
 	item_web_path = item + '/' + browser + '/'
 	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
 	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
-	#web imgs
+	#web imgs pathes
 	approved_img_web = False
 	approved_report_img_web = False
 	diff_img_web = False
@@ -254,7 +251,6 @@ def index(project,timestamp):
 		return {'status':'OK','message':'removed'}
 	else:
 		return {'status':'ERROR', 'message':'report not exists'}
-	#return "I'm remove report <" +timestamp+ ">"
 
 
 #export approved images in zip archieve
@@ -264,6 +260,7 @@ def index(project):
 	zipfilepath = config['tmp_root'] + os.sep + zipfilename
 	what_need_zip = config['data_storage_root'] + os.sep + project + os.sep + 'approved'
 	root = os.path.realpath( what_need_zip )
+	print root
 	#create zip archieve in tmp file
 	if os.path.isdir( root ):
 		files = glob.glob( what_need_zip + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png' )
@@ -279,7 +276,7 @@ def index(project):
 			#remove tmp file
 			os.remove( zipfilepath )
 			return retfile
-	return json_error( "Sorry. I can not generate approved archieve ")
+	return json_error( "Sorry. Have not approved files")
 
 #import approved images
 #todo catch errors
