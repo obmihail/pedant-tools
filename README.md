@@ -13,6 +13,6 @@ Pedant has console tool for launching tests ( it's very simple )
 
 Pedant has "parallel-work" mode for dealing with lots of tests ( it's fast )
 
-Pedant can work with different browsers ( it's wonderfull )
+Pedant can work with different browsers ( it's wonderful )
 
 Please, take a look at wiki for details and manuals
