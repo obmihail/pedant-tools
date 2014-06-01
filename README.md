@@ -1,18 +1,18 @@
-pedant-tool
+Pedant
 ==========
 
-Pedant - it's a simple tool for screenshot based testing of web interface. ( it's a pedant ) 
+Pedant - a simple tool for screenshot-based testing of web interface ( it's pedantic ) 
 
-Pedant take screenshot and compare with approved screenshot version. ( it's a cool )
+Pedant takes screenshots and compares them with approved (by you) screenshots of the same interface ( it's cool )
 
-Pedant have web interface and little local web server ( it's convenient )
+Pedant has web interface and a little local web server ( it's convenient )
 
-Pedant have console tool for crawl your website ( it's a simple )
+Pedant has console tool for crawling your website ( it's simple )
 
-Pedant have console tool for launch test ( it's a very simple )
+Pedant has console tool for launching tests ( it's very simple )
 
-Pedant have parallel work mode for big count of items ( it's fast )
+Pedant has "parallel-work" mode for dealing with lots of tests ( it's fast )
 
-Pedant can work with many browsers ( it's wonderfull )
+Pedant can work with different browsers ( it's wonderful )
 
-Please, see (wiki) for details and manuals
+Please, take a look at wiki for details and manuals
