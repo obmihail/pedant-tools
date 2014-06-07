@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import __init__,os,sys,uuid,glob,argparse,re,json
+import __init__,os,sys,uuid,glob,argparse,re,json,atexit,time
 
 # cmd_folder = os.path.realpath( __file__ + '/../../lib/python/' )
 # if cmd_folder not in sys.path:
@@ -67,7 +67,6 @@ def buildConf():
 	#where is locate data_storage folder for curent project
 	#do not change this in your project config. Web server need this parameter for locate static files
 	config[ 'prj_data_storage' ] = config[ 'data_storage_root' ] + os.sep + prj_name
-
 	return config
 
 
@@ -88,6 +87,9 @@ def buildBrowsersList( browsers ):
 	#sys.exit(0)
 	return setted.values()
 
+def unlock( lock_file_path ):
+	os.remove( lock_file_path )
+
 #parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument( "-m", "--mode", type=str , choices=['fast','full'],help="Pedant working mode", default='fast')
@@ -96,10 +98,26 @@ args = parser.parse_args()
 config = buildConf()
 browsers = buildBrowsersList( config[ args.mode ] )
 
+#create project root dir
+lock_file_path = config['prj_data_storage'] + os.sep + 'lock.file'
+if not os.path.isdir( config['prj_data_storage'] ): 
+	os.makedirs( config['prj_data_storage'] , 0777 )
+if os.path.isfile(lock_file_path):
+	print "Lock file: " + lock_file_path + " exists. Pedant already running? If not - remove this file"
+	exit(1)
+
+#create lock file
+with open(lock_file_path, 'a'):
+	os.utime(lock_file_path, None)
+
+#register remove lock file function before exit
+atexit.register(unlock, lock_file_path=lock_file_path)
+
+#run application
 app = Application( {
 		'items':getSourcesList( config['url_static_mask'] , config[ 'prj_name' ] ), 
 		'max_workers': config['max_workers'], 
 		'browsers':browsers, 
-		'data_storage_root':config['prj_data_storage'] } )
-
-app.start()
+		'data_storage_root':config['prj_data_storage'] } ).start()
+#remove lock file
+os.remove( lock_file_path )
