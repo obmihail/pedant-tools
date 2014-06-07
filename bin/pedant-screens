@@ -6,7 +6,7 @@ import __init__,os,sys,uuid,glob,argparse,re,json,atexit,time
 # if cmd_folder not in sys.path:
 # 	sys.path.insert(0, cmd_folder)
 
-from pedant.cli_app import Application 
+from pedant.screenshots.Application import Application 
 
 #get list for sources need scanning
 def getSourcesList( mask , prj_name ):
@@ -115,9 +115,7 @@ atexit.register(unlock, lock_file_path=lock_file_path)
 
 #run application
 app = Application( {
-		'items':getSourcesList( config['url_static_mask'] , config[ 'prj_name' ] ), 
+		'items':getSourcesList( config['url_mask'] , config[ 'prj_name' ] ), 
 		'max_workers': config['max_workers'], 
 		'browsers':browsers, 
 		'data_storage_root':config['prj_data_storage'] } ).start()
-#remove lock file
-os.remove( lock_file_path )

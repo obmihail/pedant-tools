@@ -1,4 +1,4 @@
-import time,screen_worker,sys,datetime
+import time,Worker,sys,datetime
 
 class Application:
 	
@@ -41,7 +41,7 @@ class Application:
 			browsers = self.chunkList( config['browsers'],workers_cnt )
 		for i in range( workers_cnt ):
 
-			inst = screen_worker.screen_worker( browsers[i][0] , config['items'], timestamp, config['data_storage_root'] )
+			inst = Worker.Worker( browsers[i][0] , config['items'], timestamp, config['data_storage_root'] )
 			self.workers.append( inst )
 
 	def calculate_workers_by_items(self,items):

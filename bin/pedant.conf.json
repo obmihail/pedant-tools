@@ -8,7 +8,7 @@
 "screens" : {
 	
 	"max_workers" : 4,
-	"url_static_mask" : "http://localhost:8080/mystaticfiles/production/#ITEM_NAME#",
+	"url_mask" : "http://localhost:8080/mystaticfiles/production/#ITEM_NAME#",
 	"fast" : [ 
 			{ "name":"PhantomJS", 
 			  "window_size": [800,600], 

@@ -1,7 +1,7 @@
 import threading,os,sys,urllib2,re,httplib
 from urlparse import urlparse
 
-class crawler_worker(threading.Thread):
+class Worker(threading.Thread):
 	#max href len
 	HREF_LEN_LIMIT  = 414
 	is_finished = False
@@ -11,7 +11,7 @@ class crawler_worker(threading.Thread):
 
 	def __init__(self, base_url, results, get_job, urls_list, blacklist = [] ):
 
-		super(crawler_worker, self).__init__()
+		super(Worker, self).__init__()
 		self.url = base_url
 		self.results = results
 		#get new job

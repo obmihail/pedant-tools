@@ -1,5 +1,4 @@
-import time,sys,datetime,json,Queue,CheckableQueue,grabber,os
-import parser
+import time,sys,datetime,json,Queue,CheckableQueue,Grabber,Parser,os
 
 class Application:
 
@@ -25,7 +24,7 @@ class Application:
 		timestamp = time.time()
 		for i in range( config['workers_cnt'] ):
 			#create grabber
-			grabber_inst = grabber.pedant_grabber( 
+			grabber_inst = Grabber.Grabber( 
 					config['timeout'],
 					self.urls_queue, 
 					self.content_queue, 
@@ -33,7 +32,7 @@ class Application:
 			#grabber_inst.setDaemon(True) 
 			self.grabbers.append( grabber_inst )
 			#create parser
-			parser_inst = parser.pedant_parser(
+			parser_inst = Parser.Parser(
 					config['base_url'],
 					config['timeout'],
 					self.urls_queue, 

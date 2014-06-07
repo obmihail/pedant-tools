@@ -1,19 +1,22 @@
 #!/usr/bin/python
 import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi
 from bottle import bottle
+from pedant.webapp import *
 
 """
-TODO: REFACTORING
+TODO: REFACTORING. Move operations to pedant package
 """
 
-templates_dir = os.path.realpath( __file__ + os.sep + '..' + os.sep + '..' + os.sep + 'lib'+ os.sep +'templates' )
-config = json.load( open(os.path.realpath( __file__ + os.sep + '..' + os.sep + "pedant.conf.json" ) ))
-config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
-config[ 'tmp_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'tmp')
+
+config = json.load( open(os.path.realpath( os.path.dirname( __file__ ) + os.sep + "pedant.conf.json" ) ))
+config[ 'data_storage_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
+config[ 'tmp_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep + os.sep +'..'+ os.sep +'tmp' )
+
 #create tmp dir
 if not os.path.isdir( config['tmp_root'] ):
 	os.makedirs( config['tmp_root'] )
 
+#templates_dir init in pedant.webapp module
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
 def is_locked( prj ):

@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os,sys,json,hashlib,Image,ImageChops,ImageDraw,time,uuid,urllib2,shutil
 
-class screen_worker(threading.Thread):
+class Worker(threading.Thread):
 
 	browser = {}
 
@@ -23,7 +23,7 @@ class screen_worker(threading.Thread):
 
 	def __init__(self, browser, items, timestamp, data_storage_root ):
 
-		super(screen_worker, self).__init__()
+		super(Worker, self).__init__()
 		#lol, copy require, i search this bug 3 hours :(
 		self.browser = browser.copy()
 		#launch browser

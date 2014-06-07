@@ -1,7 +1,7 @@
 import threading,os,sys,urllib2,re,httplib,time,json
 from urlparse import urlparse
 
-class pedant_grabber(threading.Thread):
+class Grabber(threading.Thread):
 
 	handled = False
 
@@ -9,7 +9,7 @@ class pedant_grabber(threading.Thread):
 
 	def __init__(self, timeout, urls_queue, content_queue, tmp_file_path ):
 
-		super(pedant_grabber, self).__init__()
+		super(Grabber, self).__init__()
 		self.timeout = timeout
 		self.urls_queue = urls_queue
 		self.content_queue = content_queue
@@ -44,6 +44,8 @@ class pedant_grabber(threading.Thread):
 				#get
 			except urllib2.HTTPError, e:
 				result['errors'].append( next_url + ' - ' + str( e.getcode() ) )
+			except urllib2.URLError, e:
+				result['errors'].append( next_url + ' - Bad url' )
 			#put results to file
 			with open( self.result_file, 'w') as outfile:
 				json.dump(result, outfile)

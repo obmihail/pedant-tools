@@ -2,13 +2,13 @@ import threading,os,sys,urllib2,re,httplib,time
 import lxml.html
 from urlparse import urlparse
 
-class pedant_parser(threading.Thread):
+class Parser(threading.Thread):
 
 	handled = False 
 
 	def __init__(self, base_url, timeout, urls_queue, content_queue, visited_queue, blacklist = [] ):
 
-		super(pedant_parser, self).__init__()
+		super(Parser, self).__init__()
 		self.timeout = timeout
 		self.urls_queue = urls_queue
 		self.content_queue = content_queue
