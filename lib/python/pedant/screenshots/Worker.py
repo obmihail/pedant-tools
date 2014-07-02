@@ -49,14 +49,13 @@ class Worker(threading.Thread):
 						desired_capabilities=caps,
 						keep_alive=False )
 			except:
-				print self.browser
-				raise ConnectionError( 'Can not connect to browser' )
+				print "\n >>> Can not connect to browser: " + str( self.browser ) 
+				thread.exit()
 		else:
-			print 'Browser without wd_url in thread: '
-			print browser
+			print "\n >>> Browser without wd_url in thread: " + str(self.browser)
 			thread.exit()
 
-		self.browser['instance'].set_window_size( browser['window_size'][0],browser['window_size'][1] )
+		self.browser['instance'].set_window_size( self.browser['window_size'][0],self.browser['window_size'][1] )
 
 	"""
 	run this
@@ -65,7 +64,6 @@ class Worker(threading.Thread):
 	def run(self):
 		#start browser
 		self.initBrowser()
-		
 		for item in self.items:
 			start_time = time.time()
 			self.browser['instance'].get( item['url'] )
@@ -209,10 +207,3 @@ class Worker(threading.Thread):
 			imageA.save( diff_path , "PNG" )
 			return True
 		return False
-
-
-class ConnectionError(Exception):
-	def __init__(self, value):
-		self.value = value
-	def __str__(self):
-		return repr(self.value)
