@@ -24,29 +24,8 @@ class Worker(threading.Thread):
 	def __init__(self, browser, items, timestamp, data_storage_root ):
 
 		super(Worker, self).__init__()
-		#lol, copy require, i search this bug 3 hours :(
+		#browser dict may be using in another worker, need copy
 		self.browser = browser.copy()
-		#launch browser
-		if ( browser.has_key( 'wd_url' ) ):
-
-			caps = getattr( DesiredCapabilities , self.browser['name'].upper() )
-			if self.browser.has_key('desired_capabilities'):
-				caps = dict( caps.items() + self.browser['desired_capabilities'].items() )
-			#print caps
-			try:
-				self.browser['instance'] = webdriver.Remote(  
-						command_executor=str(browser['wd_url']),
-						desired_capabilities=caps,
-						keep_alive=False )
-			except urllib2.URLError:
-				print browser
-				raise ConnectionError( 'Can not connect to browser' )
-		else:
-			print 'Browser without wd_url in thread: '
-			print browser
-			thread.exit()
-
-		self.browser['instance'].set_window_size( browser['window_size'][0],browser['window_size'][1] )
 		self.items = list(items)
 		self.timestamp = str(timestamp)
 		self.root = data_storage_root
@@ -54,11 +33,39 @@ class Worker(threading.Thread):
 		self.createFolders()
 
 	"""
+	init browser
+	"""
+	def initBrowser(self):
+		#launch browser
+		if ( self.browser.has_key( 'wd_url' ) ):
+			#caps
+			caps = getattr( DesiredCapabilities , self.browser['name'].upper() )
+			if self.browser.has_key('desired_capabilities'):
+				caps = dict( caps.items() + self.browser['desired_capabilities'].items() )
+			#print caps
+			try:
+				self.browser['instance'] = webdriver.Remote(  
+						command_executor=str(self.browser['wd_url']),
+						desired_capabilities=caps,
+						keep_alive=False )
+			except:
+				print self.browser
+				raise ConnectionError( 'Can not connect to browser' )
+		else:
+			print 'Browser without wd_url in thread: '
+			print browser
+			thread.exit()
+
+		self.browser['instance'].set_window_size( browser['window_size'][0],browser['window_size'][1] )
+
+	"""
 	run this
 	@return void
 	"""
 	def run(self):
-
+		#start browser
+		self.initBrowser()
+		
 		for item in self.items:
 			start_time = time.time()
 			self.browser['instance'].get( item['url'] )
@@ -76,7 +83,11 @@ class Worker(threading.Thread):
 					w_time += 1
 			#save actual screenshot
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
-			self.screen_processing( item )
+			try:
+				self.screen_processing( item )
+			except:
+				print "Item <" + item['unid'] + "> error:", sys.exc_info()[0]
+
 			self.finished_ids[ item['unid'] ] = item['unid']
 		self.browser['instance'].close
 		#print "\nFinish browser " + self.browser['instance'].session_id
@@ -129,6 +140,7 @@ class Worker(threading.Thread):
 					self.pathes[ item['unid'] ]['abs']['actual_report_path'],
 					self.pathes[ item['unid'] ]['abs']['diff_report_path']
 					)
+
 				shutil.copyfile( self.pathes[ item['unid'] ]['abs']['approved_path'], self.pathes[ item['unid'] ]['abs']['approved_report_path'] )
 				## if has diff - report error
 				if ( compare_res ):
@@ -177,22 +189,23 @@ class Worker(threading.Thread):
 				#get max image size
 				w_size = max( [ imageA.size[0] , imageB.size[0] ] )
 				h_size = max( [ imageA.size[1] , imageB.size[1] ] )
-				#resize images with max size
-				imageA = imageA.resize( [ w_size , h_size ] ,Image.ANTIALIAS )
-				#imageA.size = [w_size , h_size]
-				imageB = imageB.resize( [ w_size , h_size ] ,Image.ANTIALIAS )
-				#imageB.size = [w_size , h_size]
-			
-			#calculate diff
+				#make new size image
+				imageA = imageA.transform( ( w_size , h_size ), Image.EXTENT , [0,0,w_size,h_size] )
+				imageB = imageB.transform( ( w_size , h_size ), Image.EXTENT , [0,0,w_size,h_size] )
+
+			#calculate dirty diff
 			diff = ImageChops.difference(imageA, imageB)
-			#generate pretty diff image  
-			light = Image.new('RGB', size=imageA.size, color=0xFFFFFF)
-			mask = Image.new('L', size=imageA.size, color=0xFF)
-			draw = ImageDraw.Draw(mask)
-			draw.rectangle((0, 0, imageA.size[0], imageA.size[1] ), fill=0x80)
-			imageA = Image.composite(imageA, light, mask)
-			imageA.paste(diff, (0,0), mask)
-			imageA.convert("RGB")
+			#generate pretty diff image 
+			background = Image.new('RGBA', imageA.size, (200, 200, 200, 100))
+			mask = Image.new('L', imageB.size, 0xC0)
+			imageA.paste(background, (0,0) , mask)
+			imageA = imageA.convert("RGBA")
+			diffArray = list(diff.getdata())
+			# create pretty diff image
+			prettyDiffArray = [ (255,0,0,180) if diffArray[key] != (0,0,0) else x for key,x in enumerate(imageA.getdata())]
+			#make diff from imageA
+			imageA.putdata( prettyDiffArray )
+			#save diff
 			imageA.save( diff_path , "PNG" )
 			return True
 		return False
