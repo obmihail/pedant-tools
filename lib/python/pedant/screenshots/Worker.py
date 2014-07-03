@@ -192,7 +192,7 @@ class Worker(threading.Thread):
 				imageB = imageB.transform( ( w_size , h_size ), Image.EXTENT , [0,0,w_size,h_size] )
 
 			#calculate dirty diff
-			diff = ImageChops.difference(imageA, imageB)
+			diff = ImageChops.difference(imageA, imageB).convert("RGB")
 			#generate pretty diff image 
 			background = Image.new('RGBA', imageA.size, (200, 200, 200, 100))
 			mask = Image.new('L', imageB.size, 0xC0)
@@ -204,6 +204,7 @@ class Worker(threading.Thread):
 			#make diff from imageA
 			imageA.putdata( prettyDiffArray )
 			#save diff
+			imageA = imageA.convert("RGB")
 			imageA.save( diff_path , "PNG" )
 			return True
 		return False
