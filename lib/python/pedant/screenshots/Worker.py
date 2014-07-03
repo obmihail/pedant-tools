@@ -1,6 +1,7 @@
 #from threading import Thread
 import threading
 import thread
+import PedantNullHandler
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os,sys,json,hashlib,Image,ImageChops,ImageDraw,time,uuid,urllib2,shutil
@@ -14,6 +15,8 @@ class Worker(threading.Thread):
 	timestamp = ''
 
 	pathes = {}
+
+	handler = False
 
 	finished_ids = {}
 
@@ -58,37 +61,35 @@ class Worker(threading.Thread):
 		self.browser['instance'].set_window_size( self.browser['window_size'][0],self.browser['window_size'][1] )
 
 	"""
+	init handler instance
+	"""
+	def initHandler(self):
+		try:
+			self.handler = PedantHandler.PedantHandler( self.browser )
+		except:
+			self.handler = PedantNullHandler.PedantNullHandler( self.browser )
+
+	"""
 	run this
 	@return void
 	"""
 	def run(self):
 		#start browser
 		self.initBrowser()
+		self.initHandler()
 		for item in self.items:
 			start_time = time.time()
 			self.browser['instance'].get( item['url'] )
 			item['load_time'] = round( time.time() - start_time , 2)
-			#run all scripts
-			for script in item['scripts']:
-				self.browser['instance'].execute_script( script )
-			#wait js conditions
-			for wait_condition in item['wait_scripts']:
-				w_time = 0
-				while True:
-					if self.browser['instance'].execute_script( script ) or w_time > 3:
-						break
-					time.sleep(1)
-					w_time += 1
-			#save actual screenshot
+			#handler before screen
+			self.handler.before_screenshot( item )
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 			try:
 				self.screen_processing( item )
 			except:
 				print "Item <" + item['unid'] + "> error:", sys.exc_info()[0]
-
 			self.finished_ids[ item['unid'] ] = item['unid']
 		self.browser['instance'].close
-		#print "\nFinish browser " + self.browser['instance'].session_id
 		return
 
 	"""
