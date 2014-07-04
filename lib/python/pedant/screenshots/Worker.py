@@ -1,7 +1,7 @@
 #from threading import Thread
 import threading
 import thread
-import PedantNullHandler
+import PedantStandartHandlers
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os,sys,json,hashlib,Image,ImageChops,ImageDraw,time,uuid,urllib2,shutil
@@ -64,10 +64,14 @@ class Worker(threading.Thread):
 	init handler instance
 	"""
 	def initHandler(self):
+		sys.path.insert(0, os.path.dirname(__file__))
+		import PedantStandartHandlers
 		try:
-			self.handler = PedantHandler.PedantHandler( self.browser )
+			sys.path.insert(0, os.getcwd())
+			import PedantHandlers
+			self.handler = PedantHandlers.PedantHandlers( self.browser )
 		except:
-			self.handler = PedantNullHandler.PedantNullHandler( self.browser )
+			self.handler = PedantStandartHandlers.PedantStandartHandlers( self.browser )
 
 	"""
 	run this
@@ -83,6 +87,7 @@ class Worker(threading.Thread):
 			item['load_time'] = round( time.time() - start_time , 2)
 			#handler before screen
 			self.handler.before_screenshot( item )
+			#print "Handler <before_screenshot> error with item <" +item['unid']+ ">"
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 			try:
 				self.screen_processing( item )
