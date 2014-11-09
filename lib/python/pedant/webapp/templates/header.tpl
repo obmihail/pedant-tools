@@ -22,13 +22,15 @@
 	<!-- fancy box wheel -->
 	<script type="text/javascript" src="/assets/scripts/fancybox/lib/jquery.mousewheel-3.0.6.pack.js"></script>
 	<script type="text/javascript" src="/assets/scripts/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-	<!-- pedant -->
-	<script type="text/javascript" src="/assets/scripts/pedant.js"></script>
 	<!-- alerts -->
 	<script type="text/javascript" src="/assets/scripts/jquery.bsAlerts.js"></script>
 	<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
+	<!-- lazy-load plugin -->
+	<script type="text/javascript" src="/assets/scripts/jquery.lazyload.min.js"></script>
+	<!-- pedant -->
+	<script type="text/javascript" src="/assets/scripts/pedant.js"></script>
 	
 	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/ico/apple-touch-icon-144-precomposed.png">
 	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/assets/ico/apple-touch-icon-114-precomposed.png">

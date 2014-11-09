@@ -16,11 +16,12 @@ config[ 'tmp_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep + 
 if not os.path.isdir( config['tmp_root'] ):
 	os.makedirs( config['tmp_root'] )
 
+app = bottle.Bottle()
 #templates_dir init in pedant.webapp module
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
-def is_locked( prj ):
-	return os.path.isfile( config[ 'data_storage_root' ] + os.sep + prj + os.sep + 'lock.file') 
+def accessible( prj ):
+	return ( os.path.isdir( config[ 'data_storage_root' ] + os.sep + prj ) and ( not os.path.isfile( config[ 'data_storage_root' ] + os.sep + prj + os.sep + 'lock.file') ) )
 
 def template( template , **kwargs ):
 	return bottle.template( ''.join(open(templates_dir + os.sep + template, 'r').readlines()), kwargs )
@@ -28,8 +29,8 @@ def template( template , **kwargs ):
 def json_error( message ):
 	return { 'status':'ERROR', 'msg':message }
 
-def lock_error( project ):
-	return json_error( 'Operation failed, because lock file ('+config['data_storage_root']+os.sep+project+os.sep+'lock.file) is exists. Pedant-screens running?')
+def access_error( project ):
+	return json_error( 'Operation for project ('+config['data_storage_root']+os.sep+project+os.sep+') failed. Causes: lock file (lock.file) is exists. Pedant-screens can be running. Project not exists or report file is broken')
 
 def get_report_data( project, timestamp ):
 	prj_root = config['data_storage_root'] + os.sep + project
@@ -68,74 +69,78 @@ def get_approved_images( project ):
 	return data
 
 #pedant static
-@bottle.route('/assets/<path:path>')
+@app.route('/assets/<path:path>')
 def callback(path):
     return bottle.static_file(path,templates_dir + os.sep + 'assets')
 
 #pedant report images
-@bottle.route('/<project>/static/<path:path>')
+@app.route('/<project>/static/<path:path>')
 def callback(project,path):
     return bottle.static_file(path,config['data_storage_root']+os.sep+project)
 
 #coming soon page
-@bottle.route('/coming_soon')
+@app.route('/coming_soon')
+@bottle.view('coming_soon.tpl')
 def index():
-	return template( template='coming_soon.tpl' )
+	return {}
 
 #main page
-@bottle.route('/')
+@app.route('/')
+@bottle.view('index.tpl')
 def index():
 	prj_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep ) )
-	return template( template='index.tpl', prj_list=prj_list )
+	return { 'prj_list': prj_list } 
 
 #project main page. static
-@bottle.route('/<project>')
+@app.route('/<project>')
 def index(project):
 	bottle.redirect(project+"/reports")
-	#return template( template='prj_index.tpl', project=project)
 
 #project reports list. reports
-@bottle.route('/<project>/reports')
+@app.route('/<project>/reports')
+@bottle.view('prj_reports.tpl')
 def index(project):
 	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
-	return template( template='prj_reports.tpl', project=project, reports_list=rep_list)
+	return { 'project': project, 'reports_list': rep_list }
 
 #project last report
-@bottle.route('/<project>/reports/last')
+@app.route('/<project>/reports/last')
+@bottle.view('prj_report.tpl')
 def index(project):
 	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
 	if len( rep_list ) < 1:
 		bottle.redirect( "/" + project + "/reports")
-	timestamp = rep_list[0]
-	data = get_report_data( project , timestamp )
-	return template( template='prj_report.tpl', project=project, timestamp=timestamp , report_list=data )
+	return { 'project': project, 'timestamp': rep_list[0] , 'report_list': get_report_data( project , rep_list[0] ) }
 
 #project report detail
-@bottle.route('/<project>/reports/<timestamp>')
+@app.route('/<project>/reports/<timestamp>')
+@bottle.view('prj_report.tpl')
 def index(project,timestamp):
-	return template( template='prj_report.tpl', project=project, timestamp=timestamp, report_list=get_report_data( project , timestamp ) )
+	return { 'project': project, 'timestamp' :timestamp, 'report_list' :get_report_data( project , timestamp ) }
 
 #project approved images
-@bottle.route('/<project>/approved')
+@app.route('/<project>/approved')
+@bottle.view('prj_approved.tpl')
 def index(project):
-	return template( template='prj_approved.tpl', project=project, approved_list=get_approved_images( project ) )
+	return { 'project': project, 'approved_list': get_approved_images( project ) }
 
 #project item timeline
-@bottle.route('/<project>/timeline/<item>')
+@app.route('/<project>/timeline/<item>')
 def index(project,item):
 	return bottle.redirect("/coming_soon")
 	
 #approve actual image in project file
-@bottle.route('/<project>/ajax/approve/<timestamp>/<item>/<browser>')
-def index(project,timestamp,item,browser):
-	if not is_locked( project ):
-		#find actual image for file
-		item_dir = item + os.sep + browser + os.sep
-		item_web_path = item + '/' + browser + '/'
-		report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
-		approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
+@app.route('/<project>/ajax/approve/<timestamp>/<item>/<browser>')
+def approve(project,timestamp,item,browser):
+
+	item_dir = item + os.sep + browser + os.sep
+	item_web_path = item + '/' + browser + '/'
+	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
+	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
+
+	if accessible( project ) and os.path.isfile( report_dir + 'report.json' ):
 		#if approved_report exists - move it ot {original_path}.bckp
 		if os.path.isfile( report_dir + 'approved_report.bckp' ):
 			os.remove( report_dir + 'approved_report.bckp' )
@@ -152,6 +157,7 @@ def index(project,timestamp,item,browser):
 		#backup json
 		if os.path.isfile( report_dir + 'report.bckp' ):
 			os.remove( report_dir + 'report.bckp' )
+
 		os.rename( report_dir + 'report.json', report_dir + 'report.bckp' )
 		#get original json data
 		json_file=open(report_dir + 'report.bckp')
@@ -191,16 +197,16 @@ def index(project,timestamp,item,browser):
 		}
 		#return data
 		return json_data
-	return lock_error( project )
+	return access_error( project )
 
 #disapprove actual image in project file
-@bottle.route('/<project>/ajax/cancel-approve/<timestamp>/<item>/<browser>')
-def index(project,timestamp,item,browser):
-	if not is_locked( project ):
-		item_dir = item + os.sep + browser + os.sep
-		item_web_path = item + '/' + browser + '/'
-		report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
-		approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
+@app.route('/<project>/ajax/cancel-approve/<timestamp>/<item>/<browser>')
+def cancel_approve(project,timestamp,item,browser):
+	item_dir = item + os.sep + browser + os.sep
+	item_web_path = item + '/' + browser + '/'
+	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
+	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'	
+	if accessible( project ) and os.path.isfile( report_dir + 'report.bckp' ):
 		#web imgs pathes
 		approved_img_web = False
 		approved_report_img_web = False
@@ -229,6 +235,7 @@ def index(project,timestamp,item,browser):
 		#restore report.json
 		if os.path.isfile( report_dir + 'report.json' ):
 			os.remove( report_dir + 'report.json' )
+		
 		os.rename( report_dir + 'report.bckp' , report_dir + 'report.json' )
 		#read report
 		json_file=open(report_dir + 'report.json')
@@ -253,23 +260,45 @@ def index(project,timestamp,item,browser):
 		}
 		json_data['status'] = "OK"
 		return json_data
-	return lock_error( project )
+	return access_error( project )
+
+#approve json
+@app.post( "/ajax/<action>")
+def ajax( action ):
+	json_data = json.load(bottle.request.body)
+	
+	if action in ( 'approve', 'cancel-approve'):
+		return approve_or_cancel_action(json_data)
+	return {'status':'ERROR', 'msg':'BAD ACTION: '+action}
+
+
+def approve_or_cancel_action( json_data ):
+	json_answer = { "status":'OK', "msg": "Success", "items":{} }
+	for item in json_data:
+		try:
+			route = app.match({'PATH_INFO': item['path'], 'REQUEST_METHOD': 'GET'} )
+			item_result = json.loads(route[0].call( **route[1] ) )
+		except:
+			item_result = {'status': 'ERROR', 'msg': 'Error. Bad request data: path: ' + item['path']+ ' num:' + item['num'] }
+			json_answer['status'] = "ERROR"
+		json_answer['items'][ item['num'] ] = item_result
+	return json_answer
 
 #remove report
-@bottle.route('/<project>/ajax/delete/report/<timestamp>')
+@app.route('/<project>/ajax/delete/report/<timestamp>')
 def index(project,timestamp):
 	#remove report
-	if not is_locked( project ):
+	if accessible( project ):
 		path = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep
 		if os.path.isdir( path ):
 			shutil.rmtree( path )
 			return {'status':'OK','msg':'removed'}
 		else:
 			return {'status':'ERROR', 'msg':'report not exists'}
-	return lock_error( project )
+	return access_error( project )
 
 #export approved images in zip archieve
-@bottle.route('/<project>/ajax/export/approved/zip')
+@app.route('/<project>/ajax/export/approved/zip')
 def index(project):
 	zipfilename = project + '.zip'
 	zipfilepath = config['tmp_root'] + os.sep + zipfilename
@@ -295,9 +324,9 @@ def index(project):
 
 #import approved images
 #todo catch errors
-@bottle.route('/<project>/ajax/import/approved/zip',method='POST')
+@app.route('/<project>/ajax/import/approved/zip',method='POST')
 def index(project):
-	if not is_locked( project ):
+	if accessible( project ):
 		upload = bottle.request.files.get('upload') 
 		if (upload):
 			name, ext = os.path.splitext(upload.filename)
@@ -316,6 +345,6 @@ def index(project):
 				return json_error( "Project not exists")
 			return json_error( "Bad file name")
 		return json_error("You forgot send file")
-	return lock_error( project )
+	return access_error( project )
 
-bottle.run(host=config['web']['host'], port=config['web']['port'])
+bottle.run( app=app, host=config['web']['host'], port=config['web']['port'])

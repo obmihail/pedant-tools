@@ -2,4 +2,6 @@
 %if img == False:
 	<i class="status-{{status}} pedant-icon no-screenshot"></i>
 %else:
-	<a class="status-{{status}} fancybox" rel="group" href="{{img}}"><img src="{{img}}" alt="{{alt}}" /></a>
+	<a class="status-{{status}} fancybox" rel="group" href="{{img}}">
+		<img class="lazy" data-original="{{img}}" alt="{{alt}}" />
+	</a>

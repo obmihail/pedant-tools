@@ -1,7 +1,7 @@
 % include('header.tpl', title='Report:' + timestamp)
 <div class="container">
 
-<h3>Here is a report {{timestamp}}:</h3>
+<h3>Here is a report {{timestamp}}</h3>
 
 <div>
 	<ul class="list-group">
@@ -49,7 +49,7 @@
 			<th>Actual image</th>
 			<th>Diff image</th>
 			<th>Page load time</th>
-			<th>Approve it</th>
+			<th>Actions</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -59,7 +59,7 @@
 			% else:
 				<tr class="item error"
 			% end
-			data-source-uniq="{{item_report['item']['unid']}}" data-browser-uniq="{{item_report['browser']['unid']}}">
+			item-id = "{{num}}" data-source-uniq="{{item_report['item']['unid']}}" data-browser-uniq="{{item_report['browser']['unid']}}">
 				<td>
 				{{num}}
 				</td>
@@ -85,7 +85,7 @@
 					<span>{{item_report['item']['load_time']}} sec</span>
 				</td>
 				<td class="actions">
-					<a  class="approve-action pedant-icon approve-it" 
+					<a class="approve-action pedant-icon approve" 
 						title="Approve actual sreenshot"
 						data-approve-path="/{{project}}/ajax/approve/{{timestamp}}/{{item_report['item']['unid']}}/{{item_report['browser']['unid']}}"
 						data-cancel-approve-path="/{{project}}/ajax/cancel-approve/{{timestamp}}/{{item_report['item']['unid']}}/{{item_report['browser']['unid']}}"
