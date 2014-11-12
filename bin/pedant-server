@@ -152,6 +152,8 @@ def approve(project,timestamp,item,browser):
 		if os.path.isfile( report_dir + 'diff.png'):
 			os.rename( report_dir + 'diff.png' , report_dir + 'diff.bckp' )
 		#backup global approved
+		if os.path.isfile( approved_path + '.bckp' ):
+			os.remove( approved_path + '.bckp' )
 		if os.path.isfile( approved_path):
 			os.rename( approved_path, approved_path + '.bckp' )
 		#backup json
