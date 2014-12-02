@@ -1,7 +1,8 @@
 #!/usr/bin/python
-import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi
+import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading
 from bottle import bottle
 from pedant.webapp import *
+from pedant.screenshots import Application as PedantScreens
 
 """
 TODO: REFACTORING. Move operations to pedant package
@@ -264,6 +265,7 @@ def cancel_approve(project,timestamp,item,browser):
 		return json_data
 	return access_error( project )
 
+
 #approve json
 @app.post( "/ajax/<action>")
 def ajax( action ):
@@ -294,10 +296,161 @@ def index(project,timestamp):
 		path = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep
 		if os.path.isdir( path ):
 			shutil.rmtree( path )
-			return {'status':'OK','msg':'removed'}
+			return {'status':'OK','msg':'Removed'}
 		else:
-			return {'status':'ERROR', 'msg':'report not exists'}
+			return {'status':'ERROR', 'msg':'Report not exists'}
 	return access_error( project )
+
+#add new project from web interface
+@app.post( "/ajax/project/<action>")
+def ajax( action ):
+	json_data = json.load(bottle.request.body)
+	app = PedantScreens.Application()
+	prj_config = app.check_config( json_data )
+	if (  prj_config.has_key( 'error' ) ):
+		return {'status':'ERROR', 'msg': prj_config['error'] }
+	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
+	config_file = prj_root_dir + os.sep + 'pedant.json'
+	urls_file = prj_root_dir + os.sep + 'urls.json'
+	
+	#check root dir not exists
+	if ( action == 'add' and os.path.isdir(prj_root_dir) ):
+		return {'status':'ERROR', 'msg': 'Project directory with this name already exists ('+prj_root_dir+'). Remove it for continue' }
+	#create project root dir
+	
+	if ( action == 'add' and os.makedirs(prj_root_dir) is False  ):
+		return {'status':'ERROR', 'msg': "Can't create project directory ("+prj_root_dir+')' }
+
+	urls = prj_config['urls']
+	del prj_config['urls']
+	#save config to root dir/pedant.json
+	obj = open( config_file , 'wb')
+	json.dump( prj_config, obj )
+	obj.close
+
+	#save urls to root dir/urls.json
+	obj = open( urls_file , 'wb')
+	json.dump( urls, obj )
+	obj.close
+	#return result
+	return {'status':'OK', 'msg':'Project created', 'config': prj_config, 'url':'/projects/'+ prj_config['prj_name'] + '/edit'}
+
+#new project
+@app.route('/projects/new')
+@bottle.view('prj_edit.tpl')
+def index():
+	#pedant_screens.get_default_config()
+	app = PedantScreens.Application()
+	prj_config = app.get_default_config()
+	return { 'config': prj_config , 'action':'add', 'config_str':json.dumps( prj_config ) }
+
+#edit project
+@app.route('/projects/<name>/edit')
+@bottle.view('prj_edit.tpl')
+def index( name ):
+	#read config from json file
+	prj_config = json.load( open( config['data_storage_root'] + os.sep + name + os.sep + 'pedant.json' ) )
+	urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json' 
+	if os.path.isfile( urls_file ):
+		prj_config['urls'] = json.load( open( urls_file ) )
+	else:
+		prj_config['urls'] = []
+	return { 'config': prj_config, 'action':'update', 'config_str':json.dumps( prj_config ) }
+
+#launch project page
+@app.route('/projects/<name>/launch')
+@bottle.view('prj_launch.tpl')
+def index( name ):
+	#read config from json file
+	prj_config = json.load( open( config['data_storage_root'] + os.sep + name + os.sep + 'pedant.json' ) )
+	return { 'config': prj_config, 'config_str':json.dumps( prj_config ) }
+
+#ajax launch project
+@app.route( '/ajax/projects/<name>/launch/start' , method='POST' )
+def index( name ):
+	mode = json.load(bottle.request.body)['mode']
+	if ( pedant_screen_instances.has_key(name) and pedant_screen_instances[ name ]["app"].is_runned() ):
+		pass
+	else:
+		prj_dir = config['data_storage_root'] + os.sep + name
+		app = PedantScreens.Application()
+		prj_config = app.getProjectConfig( prj_dir )
+		prj_config['logging'] = True
+		prj_config['data_storage_root'] = prj_dir
+		#urls
+		urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json' 
+		prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
+		if not prj_config['modes'].has_key( mode ):
+			return { 'status':'ERROR', 'msg':" Bad mode" }
+		app.configure( prj_config, mode )
+		if ( not app.lock() ):
+			return { 'status':'ERROR', 'msg':"Failed. Project is locked. Already runned?" }
+		#t = app.start_in_thread()# - start thread mode
+		t = threading.Thread(target=app.start)
+		#t.daemon = True
+		t.start()
+		pedant_screen_instances[ name ] = {
+			'app' : app,
+			'thread' : t
+		}
+	timestamp = pedant_screen_instances[ name ]["app"].get_timestamp()
+	return { 'status':'OK', 'msg':" Project been started", 'state_url': '/ajax/projects/'+name+'/log/'+ str(timestamp) }
+
+#ajax launch project
+@app.route('/ajax/projects/<name>/launch/stop')
+def index( name ):
+	#find instance
+	if pedant_screen_instances.has_key(name):
+		pedant_screen_instances[ name ]["app"].stop()
+	return { 'status': 'OK', 'msg':'Stop procedure runned. Wait while project been stopped'}
+
+#ajax get project log
+@app.route('/ajax/projects/<name>/log/<timestamp>')
+def index(name,timestamp):
+	#if log file exists - return it
+	log_file = config['data_storage_root'] + os.sep + name + os.sep + 'logs' + os.sep + timestamp + '.log'
+	if ( os.path.isfile(log_file) ):
+		with open(log_file, 'r') as content_file:
+			content = content_file.read()
+		#print content
+		state = 'N\A'
+		if pedant_screen_instances.has_key(name):
+			if pedant_screen_instances[ name ]["app"].is_runned():
+				state = 'Runned'
+			else:
+				state = 'Stopped'
+				#kill instance of app
+				del pedant_screen_instances[ name ]
+		return { 'status':'OK', 'msg': content, 'state': state }
+	return { 'status': 'ERROR', 'msg': 'File ' + log_file + ' not found' }
+
+#find all projects in dir
+#TODO: check file location not in data_storage and create link file
+@app.route('/ajax/projects/scan', method='POST')
+def index():
+	dirname = json.load(bottle.request.body)['path']#.json['dirname']
+	#print dirname
+	if( dirname and os.path.isdir( dirname ) ):
+		files = recursive_files_search( dirname )
+		result = {}
+		for file in files:
+			#print file
+			report_folder = config['data_storage_root'] + os.sep + os.path.basename( os.path.dirname(file) )
+			#make project dir in data storage
+			if ( os.path.isdir( report_folder ) ):
+				print "Skip exist project: " + report_folder
+				continue
+			else:
+				os.makedirs( report_folder , 0777 )
+		return { "status":'OK', "msg": "Success" }
+	return json_error( "Sorry. Directory not found")
+
+def recursive_files_search( dirname ):
+	matches = []
+	for root, dirnames, filenames in os.walk( dirname ):
+		for filename in fnmatch.filter(filenames, 'pedant.json'):
+			matches.append(os.path.join(root, filename))
+	return matches
 
 #export approved images in zip archieve
 @app.route('/<project>/ajax/export/approved/zip')
@@ -349,4 +502,5 @@ def index(project):
 		return json_error("You forgot send file")
 	return access_error( project )
 
+pedant_screen_instances = {}
 bottle.run( app=app, host=config['web']['host'], port=config['web']['port'])

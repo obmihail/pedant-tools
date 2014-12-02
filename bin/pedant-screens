@@ -8,114 +8,48 @@ import __init__,os,sys,uuid,glob,argparse,re,json,atexit,time
 
 from pedant.screenshots.Application import Application 
 
-#get list for sources need scanning
-def getSourcesList( mask , prj_name ):
-	local_src_list = os.getcwd() + os.sep + 'urls.json'
-	sources = []
-	if os.path.isfile(local_src_list):
-		loc_sources = json.load( open( local_src_list ) )
-
-		for item in loc_sources:
-			name = re.sub('[^0-9a-zA-Z_]+', '_', item) 
-				
-			sources.append(
-				{
-					'url' : item,
-					'name' : name,
-					'unid' : name,
-					'scripts' : [],
-					'wait_scripts' : [],
-				} )
-	#else get pathes from current directory
-	else:
-		for item in glob.glob('./*.html'):
-			item_name = os.path.basename(item)
-			sources.append(
-				{
-					'url' : mask.replace( '#ITEM_NAME#', item_name ).replace( '#PRJ_NAME#' , prj_name ),
-					'name' : item_name,
-					'unid' : item_name,
-					'scripts' : [],
-					'wait_scripts' : [],
-				} )
-	if len( sources ) < 1:
-		print 'Pedant not found items for checking in current folder'
-		sys.exit(0)
-	return sources
-
-#get config
-def buildConf():
-	local_conf_file = os.getcwd() + os.sep + "pedant.json"
-	local_config = {}
-	#read global config
-	config = json.load( open( os.path.dirname(os.path.realpath(__file__)) + os.sep + "pedant.conf.json" ) )
-	#read local config
-	if os.path.isfile( local_conf_file ):
-		local_config = json.load( open( local_conf_file ) )
-	#config = dict( config.items() + local_config.items() )
-	config = dict( config['screens'].items() + local_config.items() )
-
-	#your project name. Default - current directory name
-	prj_name = os.path.basename( os.getcwd() )
-	if config.has_key("prj_name") and config['prj_name']:
-		prj_name = config['prj_name']
-	else:
-		config['prj_name'] = prj_name
-
-	#where pedant save\search all results
-	config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
-	#where is locate data_storage folder for curent project
-	#do not change this in your project config. Web server need this parameter for locate static files
-	config[ 'prj_data_storage' ] = config[ 'data_storage_root' ] + os.sep + prj_name
-	return config
-
-
-def buildBrowsersList( browsers ):
-	#set uniq keys
-	setted = {}
-
-	for browser in browsers:
-		unid = browser[ 'name' ] + '_' + str( browser['window_size'][0] ) + 'x' + str( browser['window_size'][1] )
-		if setted.has_key( unid ):
-			print 'Pedant find browser duplicate in current configuration. Problem browser is: ' + unid
-			sys.exit(0)
-		browser['unid'] = unid
-		if not browser.has_key( 'info' ):
-			browser['info'] = 'no info'	
-		setted[ unid ] = browser
-	#print setted.values()
-	#sys.exit(0)
-	return setted.values()
-
-def unlock( lock_file_path ):
-	os.remove( lock_file_path )
-
 #parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument( "-m", "--mode", type=str , choices=['fast','full'],help="Pedant working mode", default='fast')
+parser.add_argument( "-m", "--mode", type=str , help="Pedant working mode from config", default='fast')
+parser.add_argument( "-log", "--logging", type=bool , help="Need write log?", default=False)
 args = parser.parse_args()
 
-config = buildConf()
-browsers = buildBrowsersList( config[ args.mode ] )
+app = Application()
+config = app.getProjectConfig( os.getcwd() )
 
-#create project root dir
-lock_file_path = config['prj_data_storage'] + os.sep + 'lock.file'
-if not os.path.isdir( config['prj_data_storage'] ): 
-	os.makedirs( config['prj_data_storage'] , 0777 )
-if os.path.isfile(lock_file_path):
-	print "Lock file: " + lock_file_path + " exists. Pedant already running? If not - remove this file"
+if not config['modes'].has_key( args.mode ):
+	print ">Error: Mode <" + args.mode + "> is not found in project configuration. Exit"
 	exit(1)
 
-#create lock file
-with open(lock_file_path, 'a'):
-	os.utime(lock_file_path, None)
+if len( config['modes'][args.mode] ) < 1:
+	print ">Error: Browsers not found in "+ args.mode +" mode. Exit"
+	exit(1)
 
-#register remove lock file function before exit
-atexit.register(unlock, lock_file_path=lock_file_path)
+#where pedant save\search all results
+config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' ) + os.sep + config['prj_name']
+#where is locate data_storage folder for curent project
+#sources to be checked
+config[ 'urls' ] = app.find_sources_in_directory( os.getcwd(), (".html",".htm") ,config[ 'url_mask' ], config['prj_name'] )
+config['logging'] = args.logging
+
+if len( config[ 'urls' ] ) < 1:
+	print 'Pedant not found items for checking in current folder and in config'
+	sys.exit(0)
+
+app.configure( config, args.mode )
+
+if ( not app.lock() ):
+	lock_path = config['prj_data_storage'] + os.sep + 'lock.file'
+	print ">Error: Your project is locked. Stop all pedant-screens processes and remove file:"+ lock_path +" for continue"
+	exit(1)
+
+#register unlock function before exit from process
+atexit.register( app.unlock )
 
 #run application
-app = Application( {
-		'items':getSourcesList( config['url_mask'] , config[ 'prj_name' ] ), 
-		'max_workers': config['max_workers'], 
-		'browsers':browsers, 
-		'data_storage_root':config['prj_data_storage'] } ).start()
+app.start()
+#t = app.start_in_thread()# - start thread mode
+#time.sleep(8)
+#app.stop()# -stop thread
+#while app.state() is False:
+#	pass

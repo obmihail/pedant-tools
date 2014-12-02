@@ -23,18 +23,19 @@
 <div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="2000" ></div>
 
 <div class="btn-group">
-
-	<button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
-		<span class="caret"></span>
-		<span class="sr-only">Group actions</span>
-	</button>
-	<ul class="dropdown-menu" role="menu">
-		<li><a class="toggle-all select">Select all</a></li>
-		<li><a class="toggle-not-approved select">Select not approved</a></li>
-		<li><a class="toggle-diffs select">Select diffs</a></li>
-		<li class="divider"></li>
-		<li><a class="approve-disapprove-selected approve-selected">Approve selected</a></li>
-	</ul>
+  <button type="button" class="btn btn-danger">Action</button>
+  <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+    <span class="caret"></span>
+    <span class="sr-only">Toggle Dropdown</span>
+  </button>
+  <ul class="dropdown-menu" role="menu">
+	<li><a class="toggle-all select">Select all</a></li>
+	<li><a class="toggle-not-approved select">Select not approved</a></li>
+	<li><a class="toggle-diffs select">Select diffs</a></li>
+	<li class="divider"></li>
+	<li><a class="approve-disapprove-selected approve-selected">Approve selected</a></li>
+  </ul>
+</div>
 	
 </div>
 

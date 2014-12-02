@@ -1,0 +1,35 @@
+{	
+	"max_workers" : 4,
+	"url_mask" : "http://localhost:8080/mystaticfiles/production/#ITEM_NAME#",
+	"urls" : [],
+	"modes" : {
+		"fast" : [ 
+				{
+					"unid":"PHANTOMJS_800x600",
+					"type":"PHANTOMJS", 
+					"window_size": [800,600], 
+					"wd_url": "http://127.0.0.1:4445/wd/hub" , 
+					"desired_capabilities": {"phantomjs.page.settings.resourceTimeout": "2000"} }
+				],
+		"full" : [
+				{
+					"unid":"PHANTOMJS_800x600",
+					"type":"PHANTOMJS", 
+					"window_size":[800,600], 
+					"wd_url": "http://127.0.0.1:4445/wd/hub",
+					"desired_capabilities": {"phantomjs.page.settings.resourceTimeout": "2000"} },
+				{
+					"unid":"FIREFOX_800x600", 
+					"type":"FIREFOX",
+					"window_size":[800,600], 
+					"wd_url": "http://127.0.0.1:4444/wd/hub",
+					"desired_capabilities": {} },
+				{
+					"unid":"FIREFOX_1024x768", 
+					"type":"FIREFOX",
+					"window_size":[1024,768], 
+					"wd_url": "http://127.0.0.1:4444/wd/hub",
+					"desired_capabilities": {} }
+		]
+	}
+}
