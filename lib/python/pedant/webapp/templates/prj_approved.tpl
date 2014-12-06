@@ -1,4 +1,4 @@
-% include('header.tpl', title='Approved images for' + project)
+% include('header.tpl', title='Approved images for' + project, breadcrumbs = crumbs )
 <div class="container">
 
 <h3>Here is a approved images for project {{project}}:</h3>

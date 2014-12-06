@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading
+import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading,ctypes
 from bottle import bottle
 from pedant.webapp import *
 from pedant.screenshots import Application as PedantScreens
@@ -10,8 +10,9 @@ TODO: REFACTORING. Move operations to pedant package
 
 
 config = json.load( open(os.path.realpath( os.path.dirname( __file__ ) + os.sep + "pedant.conf.json" ) ))
-config[ 'data_storage_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' )
-config[ 'tmp_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep + os.sep +'..'+ os.sep +'tmp' )
+config[ 'pedant_root' ] = os.path.realpath( os.path.dirname( __file__ ) + os.sep +'..'+ os.sep )
+config[ 'data_storage_root' ] = os.path.realpath( config[ 'pedant_root' ] + os.sep +'web'+ os.sep +'data_storage' )
+config[ 'tmp_root' ] = os.path.realpath( config[ 'pedant_root' ] + os.sep + 'tmp' )
 
 #create tmp dir
 if not os.path.isdir( config['tmp_root'] ):
@@ -21,11 +22,21 @@ app = bottle.Bottle()
 #templates_dir init in pedant.webapp module
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
+def win_symlink( from_path, to_path ):
+	kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+	if from_path is not None and os.path.isdir(source):
+		flags = 1
+	else:
+		flags = 0
+	if ( kdll.CreateSymbolicLinkA( from_path, to_path, flags) == 0 ):
+		raise ctypes.WinError()
+
+#if current system is windows - set new os.symlink function
+if hasattr(sys, 'getwindowsversion'):
+	os.symlink = win_symlink
+
 def accessible( prj ):
 	return ( os.path.isdir( config[ 'data_storage_root' ] + os.sep + prj ) and ( not os.path.isfile( config[ 'data_storage_root' ] + os.sep + prj + os.sep + 'lock.file') ) )
-
-def template( template , **kwargs ):
-	return bottle.template( ''.join(open(templates_dir + os.sep + template, 'r').readlines()), kwargs )
 
 def json_error( message ):
 	return { 'status':'ERROR', 'msg':message }
@@ -47,19 +58,19 @@ def get_report_data( project, timestamp ):
 		report_dir = report_root + os.sep + json_data['item']['unid'] + os.sep + json_data['browser']['unid'] + os.sep
 		#check images exists
 		if os.path.isfile( approved_path ):
-			json_data['images']['approved'] = '/' + project + '/static/approved/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved.png'
+			json_data['images']['approved'] = '/projects/' + project + '/static/approved/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved.png'
 		if os.path.isfile( report_dir + 'approved_report.png' ):
-			json_data['images']['approved_report'] = '/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved_report.png'
+			json_data['images']['approved_report'] = '/projects/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved_report.png'
 		if os.path.isfile( report_dir + 'actual.png' ):
-			json_data['images']['actual'] = '/' + project + '/static/reports/' + timestamp + '/' +  json_data['item']['unid']  + '/' + json_data['browser']['unid'] + os.sep + 'actual.png'
+			json_data['images']['actual'] = '/projects/' + project + '/static/reports/' + timestamp + '/' +  json_data['item']['unid']  + '/' + json_data['browser']['unid'] + os.sep + 'actual.png'
 		if os.path.isfile( report_dir + 'diff.png' ):
-			json_data['images']['diff'] = '/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'diff.png'		
+			json_data['images']['diff'] = '/projects/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'diff.png'		
 		data.append( json_data )
 	return data
 
 def get_approved_images( project ):
 	approved_root = config['data_storage_root'] + os.sep + project + os.sep + 'approved' 
-	web_path_root = "/" + project + '/static/approved/'
+	web_path_root = "/projects/" + project + '/static/approved/'
 	data = list()
 	#print  approved_root + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png'
 
@@ -75,7 +86,7 @@ def callback(path):
     return bottle.static_file(path,templates_dir + os.sep + 'assets')
 
 #pedant report images
-@app.route('/<project>/static/<path:path>')
+@app.route('/projects/<project>/static/<path:path>')
 def callback(project,path):
     return bottle.static_file(path,config['data_storage_root']+os.sep+project)
 
@@ -85,55 +96,170 @@ def callback(project,path):
 def index():
 	return {}
 
+def get_project_list():
+	return map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep + 'pedant.json' ) )
+
 #main page
 @app.route('/')
 @bottle.view('index.tpl')
 def index():
-	prj_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep ) )
-	return { 'prj_list': prj_list } 
+	bottle.redirect( "/projects" )
+
+#main page
+@app.route('/projects')
+@bottle.view('prj_index.tpl')
+def projects():
+	prj_list = get_project_list()
+	return { 
+		'prj_list': prj_list, 
+		'search_directory': config['pedant_root'],
+		'crumbs': [ 
+			{'additional_class':'','link':'/','text':'Home'}, 
+			{'additional_class':'active','text':'Projects'} ]
+		}
 
 #project main page. static
-@app.route('/<project>')
+@app.route('/projects/<project>')
 def index(project):
-	bottle.redirect(project+"/reports")
+	bottle.redirect( project+"/reports")
+
+#new project
+@app.route('/projects/new')
+@bottle.view('prj_edit.tpl')
+def index():
+	#pedant_screens.get_default_config()
+	app = PedantScreens.Application()
+	prj_config = app.get_default_config()
+	prj_config['prj_name'] = 'My awesome project'
+	return { 
+		'config': prj_config , 
+		'action':'add', 
+		'config_str':json.dumps( prj_config ) ,
+		'crumbs': [ 
+			{'additional_class':'','link':'/','text':'Home'},
+			{'additional_class':'', 'link':'/projects','text':'Projects'},
+			{'additional_class':'active','text':'New'} ]
+		}
+
+#edit project
+@app.route('/projects/<project>/edit')
+@bottle.view('prj_edit.tpl')
+def index( project ):
+	#read config from json file
+	prj_conf_file = config['data_storage_root'] + os.sep + project + os.sep + 'pedant.json'
+	
+	if ( os.path.isfile(prj_conf_file) ):
+		prj_config = json.load( open( prj_conf_file ) )
+	else:
+		bottle.redirect( "/" )
+	urls_file = config['data_storage_root'] + os.sep + project + os.sep + 'urls.json' 
+	if os.path.isfile( urls_file ):
+		prj_config['urls'] = json.load( open( urls_file ) )
+	else:
+		prj_config['urls'] = []
+	return { 
+		'config': prj_config, 
+		'action':'update', 
+		'config_str':json.dumps( prj_config ),
+		'crumbs': [ 
+			{'additional_class':'','link':'/','text':'Home'},
+			{'additional_class':'', 'link':'/projects','text':'Projects'},
+			{'additional_class':'','link':'/projects/'+project,'text':project},
+			{'additional_class':'active','text':'Edit'}
+			 	] }
+
+#launch project page
+@app.route('/projects/<project>/launch')
+@bottle.view('prj_launch.tpl')
+def index( project ):
+	#read config from json file
+	prj_config = json.load( open( config['data_storage_root'] + os.sep + project + os.sep + 'pedant.json' ) )
+	return { 
+		'config': prj_config, 
+		'config_str':json.dumps( prj_config ),
+		'crumbs': [ 
+				{'additional_class':'','link':'/','text':'Home'},
+				{'additional_class':'', 'link':'/projects','text':'Projects'},
+				{'additional_class':'','link':'/projects/'+project,'text':project},
+				{'additional_class':'active','text':'Launch'}
+			 	] }
 
 #project reports list. reports
-@app.route('/<project>/reports')
+@app.route('/projects/<project>/reports')
 @bottle.view('prj_reports.tpl')
 def index(project):
 	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
-	return { 'project': project, 'reports_list': rep_list }
+	return { 
+		'project': project, 
+		'reports_list': rep_list,
+		'crumbs': [ 
+				{'additional_class':'','link':'/','text':'Home'},
+				{'additional_class':'', 'link':'/projects','text':'Projects'},
+				{'additional_class':'','link':'/projects/'+project,'text':project},
+				{'additional_class':'active','text':'Reports'}
+			 	] }
 
 #project last report
-@app.route('/<project>/reports/last')
+@app.route('/projects/<project>/reports/last')
 @bottle.view('prj_report.tpl')
 def index(project):
 	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
 	if len( rep_list ) < 1:
-		bottle.redirect( "/" + project + "/reports")
-	return { 'project': project, 'timestamp': rep_list[0] , 'report_list': get_report_data( project , rep_list[0] ) }
+		bottle.redirect( "/projects/" + project + "/reports")
+	return { 
+		'project': project, 
+		'timestamp': rep_list[0] , 
+		'report_list': json.dumps( get_report_data( project , rep_list[0] ) ),
+		'crumbs': [ 
+				{'additional_class':'','link':'/','text':'Home'},
+				{'additional_class':'', 'link':'/projects','text':'Projects'},
+				{'additional_class':'','link':'/projects/'+project,'text':project},
+				{'additional_class':'','link':'/projects/'+project+'/reports','text':'Reports'},
+				{'additional_class':'active','text':'Last report'}
+			 	] }
 
 #project report detail
-@app.route('/<project>/reports/<timestamp>')
+@app.route('/projects/<project>/reports/<timestamp>')
 @bottle.view('prj_report.tpl')
 def index(project,timestamp):
-	return { 'project': project, 'timestamp' :timestamp, 'report_list' :get_report_data( project , timestamp ) }
+	rep_list = get_report_data( project , timestamp )
+	for i in range(0,9):
+		rep_list += rep_list
+	return { 
+		'project': project,
+		'timestamp' :timestamp, 
+		'report_list' : json.dumps( rep_list ),
+		'crumbs': [ 
+				{'additional_class':'','link':'/','text':'Home'},
+				{'additional_class':'', 'link':'/projects','text':'Projects'},
+				{'additional_class':'','link':'/projects/'+project,'text':project},
+				{'additional_class':'','link':'/projects/'+project+'/reports','text':'Reports'},
+				{'additional_class':'active','text':timestamp}
+			 	] }
 
 #project approved images
-@app.route('/<project>/approved')
+@app.route('/projects/<project>/approved')
 @bottle.view('prj_approved.tpl')
 def index(project):
-	return { 'project': project, 'approved_list': get_approved_images( project ) }
+	return { 
+		'project': project, 
+		'approved_list': get_approved_images( project ),
+		'crumbs': [ 
+				{'additional_class':'','link':'/','text':'Home'},
+				{'additional_class':'', 'link':'/projects','text':'Projects'},
+				{'additional_class':'','link':'/projects/'+project,'text':project},
+				{'additional_class':'active','text':'Approved'}
+			 	] }
 
 #project item timeline
-@app.route('/<project>/timeline/<item>')
+@app.route('/projects/<project>/timeline/<item>')
 def index(project,item):
 	return bottle.redirect("/coming_soon")
 	
 #approve actual image in project file
-@app.route('/<project>/ajax/approve/<timestamp>/<item>/<browser>')
+@app.route('/ajax/projects/<project>/approve/<timestamp>/<item>/<browser>')
 def approve(project,timestamp,item,browser):
 
 	item_dir = item + os.sep + browser + os.sep
@@ -142,7 +268,7 @@ def approve(project,timestamp,item,browser):
 	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
 
 	if accessible( project ) and os.path.isfile( report_dir + 'report.json' ):
-		#if approved_report exists - move it ot {original_path}.bckp
+		#if approved_report exists - backup it to {original_path}.bckp
 		if os.path.isfile( report_dir + 'approved_report.bckp' ):
 			os.remove( report_dir + 'approved_report.bckp' )
 		if os.path.isfile( report_dir + 'approved_report.png'):
@@ -182,28 +308,17 @@ def approve(project,timestamp,item,browser):
 		json_data['status'] = "OK"
 		#images html
 		json_data['images'] = {
-			'approved': template( 
-							template='prj_report_image.tpl', 
-							img = '/' + project + '/static/approved/' + item_web_path + 'approved.png',
-							alt = 'Approved',
-							status = json_data['msg'] ),
-			'approved_report': template( 
-							template='prj_report_image.tpl', 
-							img = '/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png',
-							alt = 'Approved in report',
-							status = json_data['msg'] ),
-			'diff': template( 
-							template='prj_report_image.tpl', 
-							img = False,
-							alt = 'Diff',
-							status = json_data['msg'] )
+			'actual': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'actual.png',
+			'approved': '/projects/' + project + '/static/approved/' + item_web_path + 'approved.png',
+			'approved_report': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png',
+			'diff': False
 		}
 		#return data
 		return json_data
 	return access_error( project )
 
 #disapprove actual image in project file
-@app.route('/<project>/ajax/cancel-approve/<timestamp>/<item>/<browser>')
+@app.route('/ajax/projects/<project>/cancel-approve/<timestamp>/<item>/<browser>')
 def cancel_approve(project,timestamp,item,browser):
 	item_dir = item + os.sep + browser + os.sep
 	item_web_path = item + '/' + browser + '/'
@@ -219,21 +334,21 @@ def cancel_approve(project,timestamp,item,browser):
 			os.remove(approved_path)
 		if os.path.isfile( approved_path + '.bckp' ):
 			os.rename( approved_path + '.bckp', approved_path )
-			approved_img_web = '/' + project + '/static/approved/' + item_web_path + 'approved.png'
+			approved_img_web = '/projects/' + project + '/static/approved/' + item_web_path + 'approved.png'
 		
 		#restore backup approved_report
 		if os.path.isfile( report_dir + 'approved_report.png' ):
 			os.remove(report_dir + 'approved_report.png')
 		if os.path.isfile( report_dir + 'approved_report.bckp' ):
 			os.rename( report_dir + 'approved_report.bckp' , report_dir + 'approved_report.png' )
-			approved_report_img_web = '/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png'
+			approved_report_img_web = '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png'
 		
 		if os.path.isfile( report_dir + 'diff.png' ):
 			os.remove( report_dir + 'diff.png' )
 		#restore backup diff
 		if os.path.isfile( report_dir + 'diff.bckp' ):
 			os.rename( report_dir + 'diff.bckp' , report_dir + 'diff.png' )
-			diff_img_web = '/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'diff.png'
+			diff_img_web = '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'diff.png'
 
 		#restore report.json
 		if os.path.isfile( report_dir + 'report.json' ):
@@ -245,21 +360,10 @@ def cancel_approve(project,timestamp,item,browser):
 		json_data = json.load(json_file)
 		json_file.close()
 		json_data['images'] = {
-			'approved': template( 
-							template='prj_report_image.tpl', 
-							img = approved_img_web,
-							alt = 'Approved',
-							status = json_data['msg'] ),
-			'approved_report': template( 
-							template='prj_report_image.tpl', 
-							img = approved_report_img_web,
-							alt = 'Approved in report',
-							status = json_data['msg'] ),
-			'diff': template( 
-							template='prj_report_image.tpl', 
-							img = diff_img_web,
-							alt = 'Diff',
-							status = json_data['msg'] )
+			'actual': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'actual.png',
+			'approved': approved_img_web,
+			'approved_report': approved_report_img_web,
+			'diff': diff_img_web
 		}
 		json_data['status'] = "OK"
 		return json_data
@@ -267,17 +371,15 @@ def cancel_approve(project,timestamp,item,browser):
 
 
 #approve json
-@app.post( "/ajax/<action>")
+@app.post( "/ajax/projects/image/<action>")
 def ajax( action ):
 	json_data = json.load(bottle.request.body)
-	
 	if action in ( 'approve', 'cancel-approve'):
 		return approve_or_cancel_action(json_data)
-	return {'status':'ERROR', 'msg':'BAD ACTION: '+action}
-
+	return { 'status':'ERROR', 'msg':'BAD ACTION: '+action }
 
 def approve_or_cancel_action( json_data ):
-	json_answer = { "status":'OK', "msg": "Success", "items":{} }
+	json_answer = { "status":'OK', "msg": "Success", "items":[] }
 	for item in json_data:
 		try:
 			route = app.match({'PATH_INFO': item['path'], 'REQUEST_METHOD': 'GET'} )
@@ -285,11 +387,12 @@ def approve_or_cancel_action( json_data ):
 		except:
 			item_result = {'status': 'ERROR', 'msg': 'Error. Bad request data: path: ' + item['path']+ ' num:' + item['num'] }
 			json_answer['status'] = "ERROR"
-		json_answer['items'][ item['num'] ] = item_result
+		item_result[ 'element_id' ] = item['element_id']
+		json_answer['items'].append( item_result )
 	return json_answer
 
 #remove report
-@app.route('/<project>/ajax/delete/report/<timestamp>')
+@app.route('/ajax/projects/<project>/delete/report/<timestamp>')
 def index(project,timestamp):
 	#remove report
 	if accessible( project ):
@@ -302,68 +405,77 @@ def index(project,timestamp):
 	return access_error( project )
 
 #add new project from web interface
-@app.post( "/ajax/project/<action>")
-def ajax( action ):
+@app.post( "/ajax/projects/add")
+def ajax():
 	json_data = json.load(bottle.request.body)
 	app = PedantScreens.Application()
 	prj_config = app.check_config( json_data )
 	if (  prj_config.has_key( 'error' ) ):
 		return {'status':'ERROR', 'msg': prj_config['error'] }
+
+	if prj_config.has_key( 'renameWith' ):
+		del prj_config['renameWith']
+
 	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
 	config_file = prj_root_dir + os.sep + 'pedant.json'
 	urls_file = prj_root_dir + os.sep + 'urls.json'
-	
+
 	#check root dir not exists
-	if ( action == 'add' and os.path.isdir(prj_root_dir) ):
+	if os.path.isdir(prj_root_dir):
 		return {'status':'ERROR', 'msg': 'Project directory with this name already exists ('+prj_root_dir+'). Remove it for continue' }
-	#create project root dir
 	
-	if ( action == 'add' and os.makedirs(prj_root_dir) is False  ):
-		return {'status':'ERROR', 'msg': "Can't create project directory ("+prj_root_dir+')' }
+	#create project root dir
+	if os.makedirs(prj_root_dir) is False:
+		return { 'status':'ERROR', 'msg': "Can't create project directory ("+prj_root_dir+')' }
 
-	urls = prj_config['urls']
-	del prj_config['urls']
-	#save config to root dir/pedant.json
-	obj = open( config_file , 'wb')
-	json.dump( prj_config, obj )
-	obj.close
+	app.save_project_config( prj_root_dir, prj_config )
 
-	#save urls to root dir/urls.json
-	obj = open( urls_file , 'wb')
-	json.dump( urls, obj )
-	obj.close
 	#return result
-	return {'status':'OK', 'msg':'Project created', 'config': prj_config, 'url':'/projects/'+ prj_config['prj_name'] + '/edit'}
+	return {'status':'OK', 
+			'msg':'Project updated. You will be redirect to edit page', 
+			'config': prj_config, 
+			'url':'/projects/'+ prj_config['prj_name'] + '/edit'}
 
-#new project
-@app.route('/projects/new')
-@bottle.view('prj_edit.tpl')
-def index():
-	#pedant_screens.get_default_config()
-	app = PedantScreens.Application()
-	prj_config = app.get_default_config()
-	return { 'config': prj_config , 'action':'add', 'config_str':json.dumps( prj_config ) }
-
-#edit project
-@app.route('/projects/<name>/edit')
-@bottle.view('prj_edit.tpl')
-def index( name ):
-	#read config from json file
-	prj_config = json.load( open( config['data_storage_root'] + os.sep + name + os.sep + 'pedant.json' ) )
-	urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json' 
-	if os.path.isfile( urls_file ):
-		prj_config['urls'] = json.load( open( urls_file ) )
+#add new project from web interface
+@app.get( "/ajax/projects/remove/<prj_name>")
+def ajax( prj_name ):
+	prj_dir = config['data_storage_root'] + os.sep + prj_name
+	if (os.path.isdir( prj_dir ) ):
+		shutil.rmtree( prj_dir )
+		return { 'status':'OK', 'msg': "Project "+prj_dir+' deleted' }
 	else:
-		prj_config['urls'] = []
-	return { 'config': prj_config, 'action':'update', 'config_str':json.dumps( prj_config ) }
+		return { 'status':'ERROR', 'msg': "Directory "+prj_dir+' not exists' }
 
-#launch project page
-@app.route('/projects/<name>/launch')
-@bottle.view('prj_launch.tpl')
-def index( name ):
-	#read config from json file
-	prj_config = json.load( open( config['data_storage_root'] + os.sep + name + os.sep + 'pedant.json' ) )
-	return { 'config': prj_config, 'config_str':json.dumps( prj_config ) }
+#add new project from web interface
+@app.post( "/ajax/projects/update")
+def ajax():
+	json_data = json.load(bottle.request.body)
+	app = PedantScreens.Application()
+	prj_config = app.check_config( json_data )
+	if (  prj_config.has_key( 'error' ) ):
+		return {'status':'ERROR', 'msg': prj_config['error'] }
+
+	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
+
+	#rename existing project
+	if prj_config.has_key( 'oldName' ):
+		old_root_dir = config['data_storage_root'] + os.sep + prj_config['oldName']
+		# check dir is writeable
+		#rename folder
+		if os.path.isdir(prj_root_dir):
+			return {'status':'ERROR', 'msg': 'Project directory with name  ('+prj_root_dir+') already exists. Type another name' }
+		os.rename( old_root_dir , prj_root_dir )
+		#change name in config
+		del prj_config['oldName']
+
+	app.save_project_config( prj_root_dir, prj_config )
+
+	#return result
+	return {'status':'OK', 
+			'msg':'Project updated. You will be redirect to edit page', 
+			'config': prj_config, 
+			'url':'/projects/'+ prj_config['prj_name'] + '/edit' }
+
 
 #ajax launch project
 @app.route( '/ajax/projects/<name>/launch/start' , method='POST' )
@@ -374,7 +486,7 @@ def index( name ):
 	else:
 		prj_dir = config['data_storage_root'] + os.sep + name
 		app = PedantScreens.Application()
-		prj_config = app.getProjectConfig( prj_dir )
+		prj_config = app.get_project_config( prj_dir )
 		prj_config['logging'] = True
 		prj_config['data_storage_root'] = prj_dir
 		#urls
@@ -394,7 +506,10 @@ def index( name ):
 			'thread' : t
 		}
 	timestamp = pedant_screen_instances[ name ]["app"].get_timestamp()
-	return { 'status':'OK', 'msg':" Project been started", 'state_url': '/ajax/projects/'+name+'/log/'+ str(timestamp) }
+	return { 
+		'status':'OK', 
+		'msg':" Project been started", 
+		'state_url': '/ajax/projects/'+name+'/launch/log/'+ str(timestamp) }
 
 #ajax launch project
 @app.route('/ajax/projects/<name>/launch/stop')
@@ -405,7 +520,7 @@ def index( name ):
 	return { 'status': 'OK', 'msg':'Stop procedure runned. Wait while project been stopped'}
 
 #ajax get project log
-@app.route('/ajax/projects/<name>/log/<timestamp>')
+@app.route('/ajax/projects/<name>/launch/log/<timestamp>')
 def index(name,timestamp):
 	#if log file exists - return it
 	log_file = config['data_storage_root'] + os.sep + name + os.sep + 'logs' + os.sep + timestamp + '.log'
@@ -430,30 +545,54 @@ def index(name,timestamp):
 def index():
 	dirname = json.load(bottle.request.body)['path']#.json['dirname']
 	#print dirname
+	msg = ''
 	if( dirname and os.path.isdir( dirname ) ):
-		files = recursive_files_search( dirname )
+		files = recursive_projects_search( dirname )
 		result = {}
-		for file in files:
-			#print file
-			report_folder = config['data_storage_root'] + os.sep + os.path.basename( os.path.dirname(file) )
-			#make project dir in data storage
-			if ( os.path.isdir( report_folder ) ):
-				print "Skip exist project: " + report_folder
-				continue
-			else:
-				os.makedirs( report_folder , 0777 )
-		return { "status":'OK', "msg": "Success" }
-	return json_error( "Sorry. Directory not found")
+		messages = []
+		app = PedantScreens.Application()
 
-def recursive_files_search( dirname ):
+		for file in files:
+
+			detected_config = app.check_config( app.get_project_config( os.path.dirname( file ) ), ignore_urls=True )
+			if ( detected_config.has_key('error') ):
+				messages.append( 'Project config ' + file + ' was skipped: ' + detected_config['error'] )
+				continue
+			project_path = config['data_storage_root'] + os.sep + detected_config['prj_name']
+			#
+			prj_name = detected_config['prj_name']
+			config_link = project_path + os.sep + 'pedant.json'
+			urls_file = os.path.dirname( file ) + os.sep + 'urls.json'
+			urls_link = project_path + os.sep + 'urls.json'
+			#remove existing links for this project
+			if ( os.path.isdir( project_path ) ):
+				if ( os.path.isfile( config_link ) ):
+					os.remove( config_link )
+				if ( os.path.isfile(urls_link) ):
+					os.remove( urls_link )
+				messages.append( "Project " + prj_name + " been updated" )
+			#make new project dir in data storage
+			else:
+				messages.append( "Project " + prj_name + " been created" )
+				os.makedirs( project_path , 0777 )
+			# create symlink for config
+			os.symlink( file, config_link )
+			# if urls.json file exists - create symlink to it too
+			if ( os.path.isfile( urls_file ) ):
+				os.symlink( urls_file, urls_link )
+		return { "status":'OK', "msg": '<br>'.join(messages), "projects": get_project_list() }
+	return json_error( "Sorry. Directory not found" )
+
+def recursive_projects_search( dirname ):
 	matches = []
 	for root, dirnames, filenames in os.walk( dirname ):
 		for filename in fnmatch.filter(filenames, 'pedant.json'):
-			matches.append(os.path.join(root, filename))
+			if not root.startswith( config[ 'data_storage_root' ] ):
+				matches.append( os.path.join(root, filename) )
 	return matches
 
 #export approved images in zip archieve
-@app.route('/<project>/ajax/export/approved/zip')
+@app.route('/ajax/projects/<project>/export/approved/zip')
 def index(project):
 	zipfilename = project + '.zip'
 	zipfilepath = config['tmp_root'] + os.sep + zipfilename
@@ -479,7 +618,7 @@ def index(project):
 
 #import approved images
 #todo catch errors
-@app.route('/<project>/ajax/import/approved/zip',method='POST')
+@app.route('/ajax/projects/<project>/import/approved/zip',method='POST')
 def index(project):
 	if accessible( project ):
 		upload = bottle.request.files.get('upload') 

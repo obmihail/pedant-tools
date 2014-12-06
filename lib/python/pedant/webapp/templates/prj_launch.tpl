@@ -1,4 +1,4 @@
-% include('header.tpl', title='Pedant main page')
+% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
 <div class="container">
 
 <h3>Launch {{config['prj_name']}}</h3>
@@ -25,7 +25,7 @@
 <div class="form-group">
 	<button type="button" class="btn btn-default start-project" data-url="/ajax/projects/{{config['prj_name']}}/launch/start">RUN</button>
 	<button type="button" class="btn btn-default stop-project" data-url="/ajax/projects/{{config['prj_name']}}/launch/stop">STOP</button>
-	<a class="btn btn-default" target="_blank" href="/{{config['prj_name']}}/reports/last">Last project detail report</a>
+	<a class="btn btn-default" target="_blank" href="/projects/{{config['prj_name']}}/reports/last">Last project detail report</a>
 	<h4>Status: <span class='text-danger current-status'>N\A</span></h4>
 </div>
 </div>

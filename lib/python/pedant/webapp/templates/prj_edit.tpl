@@ -1,4 +1,4 @@
-% include('header.tpl', title='Pedant main page')
+% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
 <div class="container">
 
 % if action == 'add':
@@ -7,7 +7,7 @@
 <h3>Edit project: {{ config['prj_name'] }}</h3>
 % end
 
-<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="2000" ></div>
+<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="5000" ></div>
 <script type="text/javascript">
 
 
@@ -74,10 +74,8 @@
 
 <form role="form">
   <div class="form-group">
-    % if action == 'add':
     <label for="prj_name">Project name</label>
-    <input type="text" class="form-control prj_name" id="prj_name" placeholder="Enter new project name" value="My awesome project">
-    % end
+    <input type="text" class="form-control prj_name" id="prj_name" placeholder="Enter new project name" value="{{ config['prj_name'] }}">
   </div>
   <div class="form-group">
   	<label for="prj_urls">Urls for scanning (plain text, new line - new url)</label>
@@ -124,14 +122,13 @@
         </tr>
       </thead>
       <tbody>
-        
       </tbody>
     </table>
   </div>
   % if action == 'add':
-  <a id="dLabel" class="btn btn-default btn-create-prj" href="#" data-url="/ajax/project/add" role="button">ADD project</a>
+  <a id="dLabel" class="btn btn-default btn-create-prj" href="#" data-url="/ajax/projects/add" role="button">ADD project</a>
   % else:
-  <a id="dLabel" class="btn btn-default btn-create-prj" href="#" data-url="/ajax/project/update" role="button">Update project</a>
+  <a id="dLabel" class="btn btn-default btn-create-prj" href="#" data-url="/ajax/projects/update" role="button">Update project</a>
   % end
 </form>
 

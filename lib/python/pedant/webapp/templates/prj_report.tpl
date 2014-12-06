@@ -1,5 +1,78 @@
-% include('header.tpl', title='Report:' + timestamp)
+% include('header.tpl', title='Report:' + timestamp, breadcrumbs = crumbs )
 <div class="container">
+
+<script type="text/javascript">
+	var items = {{ !report_list }}
+</script>
+<script type="text/template" id="item-row-tpl" charset="UTF-8">
+	{{ !'<% $.each(data, function( index, item ) { %>' }}
+			<tr class="item {{!"<%= ( item.msg === 'success' ? 'success' : 'danger') %>"}}"
+			id="{{ !"<%= item.element_id %>"}}" 
+			data-source-uniq="{{ !"<%= item.item.unid %>" }}" 
+			data-browser-uniq="{{ !"<%= item.browser.unid %>" }}"
+			data-config="{{ !"<%= escape( JSON.stringify(item) ) %>"}}" >
+				<td>
+					{{ !"<%= item.item.unid %>" }}
+				</td>
+				<td>
+				<a href="{{!"<%= item.item.url %>"}}" target="_blank"> {{ !"<%= item.item.unid %>" }}
+				</a></td>
+				<td>
+					<span> {{!"<%= item.browser.unid %>" }} </span>
+				</td>
+				<td class="screenshot approved">
+					{{!"<% if ( item.images.approved != false ) { %> "}}
+						<a class="status-success fancybox" rel="group" href="{{!"<%= item.images.approved %>"}}">
+							<img class="lazy" data-original="{{!"<%= item.images.approved %>"}}" alt="Approved image" src="" style="display: inline;">
+						</a>
+					{{!"<% } else { %>"}}
+						<i class="pedant-icon no-screenshot"></i>
+					{{!"<% } %>"}}
+				</td>
+				<td class="screenshot approved_report">
+					{{!"<% if ( item.images.approved_report != false ) { %> "}}
+						<a class="status-success fancybox" rel="group" href="{{!"<%= item.images.approved_report %>"}}">
+							<img class="lazy" data-original="{{!"<%= item.images.approved_report %>"}}" alt="Approved image" src="" style="display: inline;">
+						</a>
+					{{!"<% } else { %>"}}
+						<i class="status-approve404 pedant-icon no-screenshot"></i>
+					{{!"<% } %>"}}
+				</td>
+				<td class="screenshot actual">
+	
+					{{!"<% if ( item.images.actual != false ) { %>  "}}
+						<a class="status-success fancybox" rel="group" href="{{!"<%= item.images.actual %>"}}">
+							<img class="lazy" data-original="{{!"<%= item.images.actual %>"}}" alt="Approved image" src="" style="display: inline;">
+						</a>
+					{{!"<% } else { %>"}}
+						<i class="status-approve404 pedant-icon no-screenshot"></i>
+					{{!"<% } %>"}}
+
+				</td>
+
+				<td class="screenshot diff">
+					{{!"<% if ( item.images.diff != false ) { %> "}}
+						<a class="status-success fancybox" rel="group" href="{{!"<%= item.images.diff %>"}}">
+							<img class="lazy" data-original="{{!"<%= item.images.diff %>"}}" alt="Approved image" src="" style="display: inline;">
+						</a>
+					{{!"<% } else { %>"}}
+						<i class="status-approve404 pedant-icon no-screenshot"></i>
+					{{!"<% } %>"}}
+				</td>
+				<td>
+					<span>{{!"<%= item.item.load_time %>"}} sec</span>
+				</td>
+				<td class="actions">
+					<a class="approve-action pedant-icon {{!"<%= action.class %>"}}" 
+						title="{{!"<%= action.title %>"}}" 
+						data-approve-path="/ajax/projects/{{project}}/approve/{{timestamp}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"
+						data-cancel-approve-path="/ajax/projects/{{ project }}/cancel-approve/{{timestamp}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"></a>
+				</td>
+			</tr>
+		}
+	}
+	{{ !"<% }); %>" }}
+</script>
 
 <h3>Here is a report {{timestamp}}</h3>
 
@@ -20,7 +93,7 @@
 	</ul>
 <div>
 
-<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="2000" ></div>
+
 
 <div class="btn-group">
   <button type="button" class="btn btn-danger">Action</button>
@@ -53,47 +126,8 @@
 			<th>Actions</th>
 		</tr>
 	</thead>
-	<tbody>
-		% for num,item_report in enumerate(report_list):
-			% if item_report['msg'] == 'success':
-				<tr class="item success"
-			% else:
-				<tr class="item error"
-			% end
-			item-id = "{{num}}" data-source-uniq="{{item_report['item']['unid']}}" data-browser-uniq="{{item_report['browser']['unid']}}">
-				<td>
-				{{num}}
-				</td>
-				<td>
-				<a href="{{item_report['item']['url']}}" target="_blank"> {{item_report['item']['name']}} 
-				</td>
-				<td>
-					<span> {{item_report['browser']['unid']}} </span>
-				</td>
-				<td class="screenshot approved">
-					%include( 'prj_report_image.tpl' , img = item_report['images']['approved'], alt="Approved" , status=item_report['msg'] )
-				</td>
-				<td class="screenshot approved_report">
-					%include( 'prj_report_image.tpl' , img = item_report['images']['approved_report'], alt="Approved in report", status=item_report['msg'] )
-				</td>
-				<td class="screenshot actual">
-					%include( 'prj_report_image.tpl' , img = item_report['images']['actual'], alt="Actual", status='success' )
-				</td>
-				<td class="screenshot diff">
-					%include( 'prj_report_image.tpl' , img = item_report['images']['diff'], alt="Diff", status=item_report['msg'] )
-				</td>
-				<td>
-					<span>{{item_report['item']['load_time']}} sec</span>
-				</td>
-				<td class="actions">
-					<a class="approve-action pedant-icon approve" 
-						title="Approve actual sreenshot"
-						data-approve-path="/{{project}}/ajax/approve/{{timestamp}}/{{item_report['item']['unid']}}/{{item_report['browser']['unid']}}"
-						data-cancel-approve-path="/{{project}}/ajax/cancel-approve/{{timestamp}}/{{item_report['item']['unid']}}/{{item_report['browser']['unid']}}"
-					></a>
-				</td>
-			</tr>
-		% end
+	<tbody class="items">
+		
 	</tbody>
 </table>
 

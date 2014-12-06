@@ -114,7 +114,7 @@ class Application:
 		return sources
 
 	#get config for project from path
-	def getProjectConfig( self, directory ):
+	def get_project_config( self, directory ):
 		local_conf_file =  directory + os.sep + "pedant.json"
 		local_config = {}
 		#read global config
@@ -131,7 +131,24 @@ class Application:
 		prj_name = os.path.basename( directory )
 		if not config.has_key("prj_name"):
 			config['prj_name'] = prj_name
-		return config
+
+		return config#self.check_config( config )
+
+	def save_project_config(self, prj_dir, config):
+		urls = config['urls']
+		del config['urls']
+		config_file = prj_dir + os.sep + 'pedant.json'
+		urls_file = prj_dir + os.sep + 'urls.json'
+
+		#save config to root dir/pedant.json
+		obj = open( config_file , 'wb')
+		json.dump( config, obj )
+		obj.close
+
+		#save urls to root dir/urls.json
+		obj = open( urls_file , 'wb')
+		json.dump( urls, obj )
+		obj.close
 
 	def log(self, log_str=''):
 		if ( self.log_file and log_str ):
@@ -157,7 +174,7 @@ class Application:
 		if os.path.isfile( self.lock_file_path ):
 			os.remove( self.lock_file_path )
 
-	def check_config( self, config ):
+	def check_config( self, config, ignore_urls = False ):
 
 		#check modes section exists
 		config['error'] = ''
@@ -184,7 +201,7 @@ class Application:
 			checked[ browser['unid'] ] = browser['unid']
 		
 		#check urls count
-		if ( len(config['urls']) < 1):
+		if ( len(config['urls']) < 1 ) and not ignore_urls :
 			config['error'] += ' Urls is empty '
 
 		#check urls format
@@ -201,10 +218,10 @@ class Application:
 				config['error'] += ' Url ' + url + ' is invalid'
 		
 		#check project name
-		new_name = re.sub('[^0-9a-zA-Z_]+', '_', config['prj_name'])
-		if ( len(new_name) < 1):
+		normalized_name = re.sub('[^0-9a-zA-Z_]+', '_', config['prj_name'])
+		if ( len(normalized_name) < 1):
 			config['error'] += ' Project name ' + config['prj_name'] + ' is invalid'
-		config['prj_name'] = new_name
+		config['prj_name'] = normalized_name
 		
 		#check max workers
 		max_workers = int(config['max_workers'])

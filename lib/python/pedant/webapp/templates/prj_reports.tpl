@@ -1,4 +1,4 @@
-% include('header.tpl', title='Pedant main page')
+% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
 <div class="container">
 
 <h3>Here is a reports list for {{project}}:</h3>
@@ -16,10 +16,10 @@
 		% for report in reports_list:
 			<tr>
 				<td>
-					<a href="/{{project}}/reports/{{report}}"> {{report}} </a>
+					<a href="/projects/{{project}}/reports/{{report}}"> {{report}} </a>
 				</td>
 				<td>
-					<a class="pedant-icon delete-item" data-delete-url="/{{project}}/ajax/delete/report/{{report}}"></a>
+					<a class="pedant-icon delete-item" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report}}"></a>
 				</td>
 			</tr>
 		% end

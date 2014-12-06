@@ -67,3 +67,16 @@
 			</div>
 		</div>
 	</div>
+	% if len( breadcrumbs ) > 0:
+		<ol class="breadcrumb">
+		% for crumb in breadcrumbs:
+	  		<li class="{{ crumb['additional_class'] }}">
+	  			% if crumb.has_key('link'): 
+	  				<a href='{{ crumb['link'] }}'>{{ crumb['text'] }}</a>
+	  			% else:
+	  				{{ crumb['text'] }}
+	  			% end
+	  		</li>
+	  	% end
+		</ol>
+	% end
