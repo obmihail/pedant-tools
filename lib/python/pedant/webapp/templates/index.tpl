@@ -2,6 +2,5 @@
 
 <div class="container">
 
-
 </div>
 % include('footer.tpl')

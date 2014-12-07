@@ -98,7 +98,7 @@ class Worker(threading.Thread):
 			self.browser['instance'].get( item['url'] )
 			item['load_time'] = round( time.time() - start_time , 2)
 			#handler before screen
-			self.handler.before_screenshot( item )
+			self.handler.before_screenshot( item, self.browser )
 			#print "Handler <before_screenshot> error with item <" +item['unid']+ ">"
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 			try:

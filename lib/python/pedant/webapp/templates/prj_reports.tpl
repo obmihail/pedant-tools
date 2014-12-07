@@ -3,8 +3,6 @@
 
 <h3>Here is a reports list for {{project}}:</h3>
 
-<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="2000" ></div>
-
 <table class="table table-striped">
 	<thead>
 		<tr>

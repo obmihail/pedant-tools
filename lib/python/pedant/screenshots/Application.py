@@ -149,7 +149,10 @@ class Application:
 		config['urls'] = []
 		#read local config
 		if os.path.isfile( local_conf_file ):
-			local_config = json.load( open( local_conf_file ) )
+			try:
+				local_config = json.load( open( local_conf_file ) )
+			except:
+				return {}
 		#config = dict( config.items() + local_config.items() )
 		#normalize config
 		for key, value in local_config.iteritems():

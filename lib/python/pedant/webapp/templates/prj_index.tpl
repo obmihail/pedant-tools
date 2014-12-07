@@ -45,11 +45,11 @@
   <fieldset>
   	<div class="form-group required-input form-inline">
         <input type="text" class="form-control" id="dir_path" placeholder="Path for scanning" value="{{!search_directory}}">
+        <img class="preloader hidden" src="/assets/img/preload.gif"/>
         <a href="#" class="btn btn-default active scan_projects" role="button" data-url="">Find projects</a>
     </div>
     
     <a href="/projects/new" class="btn btn-default btn-lg active" role="button">Add manually</a>
-    <img class="preloader hidden" src="/assets/img/preload.gif"/>
   </fieldset>
 </div>
 <table class="table table-striped" id="projects">
