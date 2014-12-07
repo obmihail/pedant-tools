@@ -19,7 +19,7 @@
 					<a href="/projects/{{project}}/reports/{{report}}"> {{report}} </a>
 				</td>
 				<td>
-					<a class="pedant-icon delete-item" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report}}"></a>
+					<a href="javascript:remove_approved_item(this);" class="pedant-icon delete-item delete-report" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report}}"></a>
 				</td>
 			</tr>
 		% end

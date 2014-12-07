@@ -32,6 +32,7 @@ class Application:
 			if ( not os.path.isdir( os.path.dirname( self.log_file ) ) ):
 				os.makedirs( os.path.dirname( self.log_file ) )
 
+		self.config = config
 		self.lock_file_path = config['data_storage_root'] + os.sep + 'lock.file'
 		browsers = self.reconfigureBrowsers( config['modes'][ mode ] )
 		self.items = config['urls']
@@ -43,6 +44,7 @@ class Application:
 			if workers_cnt > config['max_workers']:
 				workers_cnt = config['max_workers']
 			items = self.chunkList(config['urls'],workers_cnt)
+			self.total_count = len(config['urls'])
 			browsers = [ browsers for bro in range(workers_cnt) if True ][0]
 			for i in range( workers_cnt ):
 				inst = Worker.Worker( browsers[0] , items[i] , self.timestamp , config['data_storage_root'] )
@@ -55,10 +57,34 @@ class Application:
 			if workers_cnt > config['max_workers']:
 				workers_cnt = config['max_workers']
 			browsers = self.chunkList( browsers,workers_cnt )
+			self.total_count = workers_cnt * len(config['urls'])
 			for i in range( workers_cnt ):
 				inst = Worker.Worker( browsers[i][0] , config['urls'], self.timestamp, config['data_storage_root'] )
 				self.workers.append( inst )
+
 		return self
+
+	def symlink( self, from_path, to_path ):
+		if hasattr(sys, 'getwindowsversion'):
+			kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+			if from_path is not None and os.path.isdir(source):
+				flags = 1
+			else:
+				flags = 0
+			if ( kdll.CreateSymbolicLinkA( from_path, to_path, flags) == 0 ):
+				raise ctypes.WinError()
+		else:
+			os.symlink( from_path, to_path )
+
+	def create_symlinks( self, source_dir ):
+		prj_root = self.config['data_storage_root']
+		if not os.path.isdir( prj_root ):
+			os.makedirs( prj_root )
+		for filename in ( 'pedant.json', 'urls.json', 'PedantHandlers.py' ):
+			if os.path.isfile( source_dir + os.sep + filename ):
+				if ( os.path.isfile( prj_root + os.sep + filename ) ):
+					os.remove( prj_root + os.sep + filename )
+				self.symlink( source_dir + os.sep + filename, prj_root + os.sep + filename )
 
 	def reconfigureBrowsers( self, browsers ):
 		#set uniq keys
@@ -125,30 +151,37 @@ class Application:
 		if os.path.isfile( local_conf_file ):
 			local_config = json.load( open( local_conf_file ) )
 		#config = dict( config.items() + local_config.items() )
-		config = dict( config.items() + local_config.items() )
-
+		#normalize config
+		for key, value in local_config.iteritems():
+			if ( config.has_key(key) ):
+				config[ key ] = value
 		#your project name. Default - current directory name
 		prj_name = os.path.basename( directory )
-		if not config.has_key("prj_name"):
+		if not local_config.has_key("prj_name"):
 			config['prj_name'] = prj_name
-
+		else:
+			config['prj_name'] = local_config['prj_name']
 		return config#self.check_config( config )
 
 	def save_project_config(self, prj_dir, config):
-		urls = config['urls']
-		del config['urls']
+		if not config.has_key('without_urls'):
+			urls_file = prj_dir + os.sep + 'urls.json'
+			urls = config['urls']
+			del config['urls']
+			#save urls to root dir/urls.json
+			obj = open( urls_file , 'wb')
+			json.dump( urls, obj )
+			obj.close
+		else:
+			del config['without_urls']
+		
 		config_file = prj_dir + os.sep + 'pedant.json'
-		urls_file = prj_dir + os.sep + 'urls.json'
-
 		#save config to root dir/pedant.json
 		obj = open( config_file , 'wb')
 		json.dump( config, obj )
 		obj.close
 
-		#save urls to root dir/urls.json
-		obj = open( urls_file , 'wb')
-		json.dump( urls, obj )
-		obj.close
+		return config
 
 	def log(self, log_str=''):
 		if ( self.log_file and log_str ):
@@ -187,12 +220,22 @@ class Application:
 			config['error'] += 'Modes is empty'
 			return config
 
-		#check browsers count in modes
+		#check browsers in modes
 		for modename,mode in config['modes'].iteritems():
 			if ( len(mode) < 1):
 				config['error'] += ' Mode ' + modename + ' have not browsers'
 				return config
-
+			else:
+				for browser in config['modes'][modename]:
+					for key in ('unid', 'desired_capabilities', 'type', 'info', 'wd_url'):
+						if not browser.has_key( key ):
+							config['error'] += ' Pedant can not work with browser without required key - ' + key
+							return config
+		
+		#check full mode exists
+		if not config["modes"].has_key("full"):
+			config["error"] = "Full mode are missing in config"
+			return config
 		#check browsers is unique in full mode
 		checked = {}
 		for browser in config['modes']['full']:
@@ -201,11 +244,11 @@ class Application:
 			checked[ browser['unid'] ] = browser['unid']
 		
 		#check urls count
-		if ( len(config['urls']) < 1 ) and not ignore_urls :
+		if ( len(config['urls']) < 1 ) and not ignore_urls and not config.has_key('without_urls'):
 			config['error'] += ' Urls is empty '
 
 		#check urls format
-		regex = re.compile(
+		url_regex = re.compile(
 			r'^(?:http|ftp)s?://' # http:// or https://
 			r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
 			r'localhost|' #localhost...
@@ -213,9 +256,12 @@ class Application:
 			r'(?::\d+)?' # optional port
 			r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-		for url in config['urls']:
-			if ( not regex.match( url ) ):
-				config['error'] += ' Url ' + url + ' is invalid'
+		if not config.has_key('without_urls'):
+			for url in config['urls']:
+				if ( not url_regex.match( url ) ):
+					config['error'] += ' Url ' + url + ' is invalid'
+			if not url_regex.match( config['url_mask'] ):
+					config['error'] += ' Url mask ' + config['url_mask'] + ' is invalid'
 		
 		#check project name
 		normalized_name = re.sub('[^0-9a-zA-Z_]+', '_', config['prj_name'])
@@ -267,13 +313,13 @@ class Application:
 		#wait all workers are finished
 		while( self.runned ):
 			#write status
-			self.print_progress( str( len(finished) ) + ' / ' + str(len( self.items )) + ' finished | Active workers: ' + str(len( self.workers)) )
+			self.print_progress( str( len(finished) ) + ' / ' + str( self.total_count ) + ' finished | Active workers: ' + str(len( self.workers)) )
 			#check all workers
 			log = ''
 			for worker_inst in self.workers:
 				#calculate problems count
 				log += worker_inst.log()
-				finished.update( worker_inst.finished_ids )				
+				finished.update( worker_inst.finished_ids )
 				#check worker
 				if worker_inst.isAlive() == False:
 					#worker_inst.browser['instance'].close()

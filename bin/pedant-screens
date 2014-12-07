@@ -10,12 +10,18 @@ from pedant.screenshots.Application import Application
 
 #parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument( "-m", "--mode", type=str , help="Pedant working mode from config", default='fast')
+parser.add_argument( "-m", "--mode", type=str , help="Pedant working mode from config", default='full')
 parser.add_argument( "-log", "--logging", type=bool , help="Need write log?", default=False)
 args = parser.parse_args()
 
 app = Application()
-config = app.getProjectConfig( os.getcwd() )
+config = app.check_config( app.get_project_config( os.getcwd() ), ignore_urls=True )
+if config.has_key('error'):
+	print "You config is broken :( Errors:"
+	print config['error']
+	print "Current config is: "
+	print config
+	exit(0)
 
 if not config['modes'].has_key( args.mode ):
 	print ">Error: Mode <" + args.mode + "> is not found in project configuration. Exit"
@@ -27,29 +33,23 @@ if len( config['modes'][args.mode] ) < 1:
 
 #where pedant save\search all results
 config[ 'data_storage_root' ] = os.path.realpath( sys.argv[0] + os.sep + '/'+ os.sep +'..'+ os.sep +'..'+ os.sep +'web'+ os.sep +'data_storage' ) + os.sep + config['prj_name']
-#where is locate data_storage folder for curent project
 #sources to be checked
-config[ 'urls' ] = app.find_sources_in_directory( os.getcwd(), (".html",".htm") ,config[ 'url_mask' ], config['prj_name'] )
+config[ 'urls' ] = app.find_sources_in_directory( os.getcwd(), ("*.html","*.htm") ,config[ 'url_mask' ], config['prj_name'] )
 config['logging'] = args.logging
 
 if len( config[ 'urls' ] ) < 1:
 	print 'Pedant not found items for checking in current folder and in config'
 	sys.exit(0)
 
+#configure
 app.configure( config, args.mode )
 
+#create symbolic link to config, urls and handlers
+app.create_symlinks( os.getcwd() )
+
 if ( not app.lock() ):
-	lock_path = config['prj_data_storage'] + os.sep + 'lock.file'
-	print ">Error: Your project is locked. Stop all pedant-screens processes and remove file:"+ lock_path +" for continue"
-	exit(1)
-
-#register unlock function before exit from process
+	lock_path = config['data_storage_root'] + os.sep + 'lock.file'
+	print ">Error: Your project is locked. Kill all pedant-screens processes and remove file:"+ lock_path +" for continue"
+	exit(0)
 atexit.register( app.unlock )
-
-#run application
 app.start()
-#t = app.start_in_thread()# - start thread mode
-#time.sleep(8)
-#app.stop()# -stop thread
-#while app.state() is False:
-#	pass

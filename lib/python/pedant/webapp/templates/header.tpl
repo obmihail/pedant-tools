@@ -19,6 +19,7 @@
 	<!-- jquery -->
 	<script src="/assets/scripts/jquery.min.js" type="text/javascript"></script>
 	<!-- pedant -->
+	<script type="text/javascript" src="/assets/scripts/pedant.functions.js"></script>
 	<script type="text/javascript" src="/assets/scripts/pedant.js"></script>
 	<!-- bootstrap -->
 	<script src="/assets/scripts/bootstrap.min.js" type="text/javascript"></script>
@@ -80,3 +81,5 @@
 	  	% end
 		</ol>
 	% end
+
+<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="10000" ></div>

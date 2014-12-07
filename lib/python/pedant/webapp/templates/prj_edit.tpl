@@ -7,7 +7,6 @@
 <h3>Edit project: {{ config['prj_name'] }}</h3>
 % end
 
-<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="5000" ></div>
 <script type="text/javascript">
 
 
@@ -29,7 +28,7 @@
 
 <script type="text/template" id="browser-row-tpl" charset="UTF-8">
 	{{ !'<% $.each(data, function( index, browser ) { %>' }}
-	<tr class = "browser-row" data-config="{{ !"<%= escape( JSON.stringify(browser) ) %>" }}">
+	<tr class = "browser-row">
           <td>{{ !"<%= browser.unid %>" }}</td>
           <td>{{ !"<%= browser.type %>" }}</td>
           <td>{{ !"<%= browser.window_size[0] %>" }}X{{ !"<%= browser.window_size[1] %>" }}</td>
@@ -37,9 +36,8 @@
           <td>{{ !"<%= JSON.stringify(browser.desired_capabilities) %>" }}</td>
           <td>{{ !"<%= browser.info %>" }}</td>
           <td class="col-md-4">
-          	<a class="edit-browser" data-toggle="modal" data-target="#editBrowserModal" data-mode="edit">[[E]]</a> 
-          	<a class="delete-browser" data-toggle="modal" data-target="#deleteBrowserModal" data-mode="delete">[[D]]</a>
-          	<a class="test-browser" data-toggle="modal" data-target="#testBrowserModal" data-mode="test">[[T]]</a>
+          	<a class="edit-browser" data-toggle="modal" data-target="#editBrowserModal" data-mode="edit" data-unid="{{!"<%= browser.unid %>"}}">Edit</a> 
+          	<a class="delete-browser" data-toggle="modal" data-target="#deleteBrowserModal" data-mode="delete" data-unid="{{!"<%= browser.unid %>"}}">Del</a>
           </td>
     </tr>
 	{{ !'<% }); %>' }}
@@ -52,8 +50,8 @@
           <td>{{ !"<%= JSON.stringify(browsers) %>" }}</td>
           <td>
           	{{ !"<% if ( name.toLowerCase() !== 'full' ) { %>"}}
-          	<a class="edit-mode" data-toggle="modal" data-target="#editLMModal" data-mode="edit">[[E]]</a> 
-          	<a class="delete-mode" data-toggle="modal" data-target="#deleteLMModal" data-mode="delete">[[D]]</a>
+          	<a class="edit-mode" data-toggle="modal" data-target="#editLMModal" data-mode="edit" data-unid="{{ !"<%= name %>" }}">Edit</a> 
+          	<a class="delete-mode" data-toggle="modal" data-target="#deleteLMModal" data-mode="delete" data-unid="{{ !"<%= name %>" }}">Del</a>
           	{{ !"<% } %>"}}
           </td>
         </tr>
@@ -79,20 +77,25 @@
   </div>
   <div class="form-group">
   	<label for="prj_urls">Urls for scanning (plain text, new line - new url)</label>
-  	
-    % if config.has_key('urls'):
+    % if config.has_key('without_urls'):
+      <p>This is project without urls</p>
+    % elif config.has_key('urls'):
       <textarea class="form-control" id="prj_urls" rows="7">{{ '\n'.join(config['urls']) }}</textarea>
     % else:
       <textarea class="form-control" id="prj_urls" rows="7"></textarea>
     % end
   </div>
   <div class="form-group">
-  	<label for="prj_threads">Maximum pedant-screens threads. If you don't know what is - don't touch</label>
-  	<input type="number" class="form-control" id="prj_threads" min="1" max="20" placeholder="Threads" value="3">
+    <label for="static_mask">Static mask for html files ( Needle for pedant console tool )</label>
+    <input type="text" class="form-control" id="static_mask" placeholder="static mask" value="{{config['url_mask'] }}">
+  </div>
+  <div class="form-group">
+    <label for="prj_threads">Maximum pedant-screens threads. If you don't know what is - don't touch</label>
+    <input type="number" class="form-control" id="prj_threads" min="1" max="20" placeholder="Threads" value="3">
   </div>
   <div class="form-group">
   <label for="browsers-table">Browsers</label>
-  <a class="pedant-icon add-item add-browser" data-toggle="modal" data-target="#editBrowserModal" data-mode="add">[[+]]</a> 
+  <a class="pedant-icon add-item add-browser" data-toggle="modal" data-target="#editBrowserModal" data-mode="add">Add</a> 
 	<table class="table table-condensed table-hover" id="browsers-table" name="browsers">
       <thead>
         <tr>
@@ -112,7 +115,7 @@
   </div>
   <div class="form-group">
     <label for="modes-table">Launch modes</label>
-    <a class="pedant-icon add-item add-launch-mode" data-toggle="modal" data-target="#editLMModal" data-mode="add">[[+]]</a> 
+    <a class="pedant-icon add-item add-launch-mode" data-toggle="modal" data-target="#editLMModal" data-mode="add">Add</a> 
 	<table class="table table-condensed" id="modes-table" name="modes">
       <thead>
         <tr>

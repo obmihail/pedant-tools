@@ -1,4 +1,5 @@
 % include('header.tpl', title='Report:' + timestamp, breadcrumbs = crumbs )
+
 <div class="container">
 
 <script type="text/javascript">
@@ -12,7 +13,7 @@
 			data-browser-uniq="{{ !"<%= item.browser.unid %>" }}"
 			data-config="{{ !"<%= escape( JSON.stringify(item) ) %>"}}" >
 				<td>
-					{{ !"<%= item.item.unid %>" }}
+					{{ !"<%= item.element_id %>" }}
 				</td>
 				<td>
 				<a href="{{!"<%= item.item.url %>"}}" target="_blank"> {{ !"<%= item.item.unid %>" }}
@@ -26,7 +27,7 @@
 							<img class="lazy" data-original="{{!"<%= item.images.approved %>"}}" alt="Approved image" src="" style="display: inline;">
 						</a>
 					{{!"<% } else { %>"}}
-						<i class="pedant-icon no-screenshot"></i>
+						<i class="status-approve404 pedant-icon no-screenshot"></i>
 					{{!"<% } %>"}}
 				</td>
 				<td class="screenshot approved_report">
@@ -47,7 +48,6 @@
 					{{!"<% } else { %>"}}
 						<i class="status-approve404 pedant-icon no-screenshot"></i>
 					{{!"<% } %>"}}
-
 				</td>
 
 				<td class="screenshot diff">

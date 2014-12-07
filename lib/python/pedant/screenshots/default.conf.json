@@ -23,13 +23,13 @@
 					"type":"FIREFOX",
 					"window_size":[800,600], 
 					"wd_url": "http://127.0.0.1:4444/wd/hub",
-					"desired_capabilities": {} },
+					"desired_capabilities": {"platform":"ANY","browserName":"firefox","version":"","javascriptEnabled":true} },
 				{
 					"unid":"FIREFOX_1024x768", 
 					"type":"FIREFOX",
 					"window_size":[1024,768], 
 					"wd_url": "http://127.0.0.1:4444/wd/hub",
-					"desired_capabilities": {} }
+					"desired_capabilities": {"platform":"ANY","browserName":"firefox","version":"","javascriptEnabled":true} }
 		]
 	}
 }

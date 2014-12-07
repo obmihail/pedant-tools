@@ -11,7 +11,7 @@
 		{{ !'<% $.each( data, function( index, project ) { %>' }}
 			<tr>
 				<td>
-				<a href="/projects/{{!"<%= project %>"}}"> {{!"<%= project %>"}} 
+				<a href="/projects/{{!"<%= project['name'] %>"}}"> {{!"<%= project['name'] %>"}} 
 				</td>
 				<td>
 					<!-- Single button -->
@@ -20,16 +20,16 @@
 							Actions <span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu" role="menu">
-							<li><a href="/projects/{{!"<%= project %>"}}/launch">Launch project</a></li>
-							<li><a href="/projects/{{!"<%= project %>"}}/edit">Edit configuration</a></li>
+							<li><a href="/projects/{{!"<%= project['name'] %>"}}/launch">Launch project</a></li>
+							<li><a href="/projects/{{!"<%= project['name'] %>"}}/edit">Edit configuration</a></li>
 							<li class="divider"></li>
-							<li><a href="/projects/{{!"<%= project %>"}}/reports/last">Last report</a></li>
-							<li><a href="/projects/{{!"<%= project %>"}}/reports">Reports list</a></li>
+							<li><a href="/projects/{{!"<%= project['name'] %>"}}/reports/last">Last report</a></li>
+							<li><a href="/projects/{{!"<%= project['name'] %>"}}/reports">Reports list</a></li>
 							<li class="divider"></li>
-							<li><a href="/projects/{{!"<%= project %>"}}/approved">Approved images</a></li>
-							<li><a href="/ajax/projects/{{!"<%= project %>"}}/export/approved/zip">Download approved images</a></li>
+							<li><a href="/projects/{{!"<%= project['name'] %>"}}/approved">Approved images</a></li>
+							<li><a href="/ajax/projects/{{!"<%= project['name'] %>"}}/export/approved/zip">Download approved images</a></li>
 							<li class="divider"></li>
-							<li><a href="javascript:delete_project('{{!"<%= project %>"}}');">Remove</a></li>
+							<li><a href="javascript:delete_project('{{!"<%= project['name'] %>"}}');">Remove</a></li>
 						</ul>
 					</div>
 				</td>

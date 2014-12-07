@@ -75,24 +75,6 @@
 </div>
 </div>
 
-<!-- BRO TESTING MODAL -->
-<div class="modal fade" id="testBrowserModal" tabindex="-1" role="dialog" aria-labelledby="browserTesting" aria-hidden="true">
-<div class="modal-dialog">
-<div class="modal-content">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-    <h4 class="modal-title" id="browserTesting">Test browser</h4>
-  </div>
-  <div class="modal-body">
-  	<p>Coming soon</p>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-  </div>
-</div>
-</div>
-</div>
-
 <!-- PROJECT MODE DELETE MODAL -->
 <div class="modal fade" id="deleteLMModal" tabindex="-1" role="dialog" aria-labelledby="modeConfirm" aria-hidden="true">
 <div class="modal-dialog">
@@ -113,7 +95,7 @@
 </div>
 
 <!-- PROJECT MODE MODAL -->
-<div class="modal fade" id="editLMModal" data-mode='add' data-name='' tabindex="-1" role="dialog" aria-labelledby="modeEditor" aria-hidden="true">
+<div class="modal fade" id="editLMModal" tabindex="-1" role="dialog" aria-labelledby="modeEditor" aria-hidden="true">
 <div class="modal-dialog">
 <div class="modal-content">
   <div class="modal-header">

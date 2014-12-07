@@ -106,7 +106,7 @@ class Worker(threading.Thread):
 			except:
 				print "Item <" + item['unid'] + "> error:", sys.exc_info()[0]
 				self.log( "Error while screen processing for resource" + item['url'] )
-			self.finished_ids[ item['unid'] ] = item['unid']
+			self.finished_ids[ item['unid']+self.browser['unid'] ] = True
 			self.log( "Finished checking for url " + item['url'] )
 		self.browser['instance'].close()
 		self.handled = True
@@ -121,15 +121,15 @@ class Worker(threading.Thread):
 		# iterate items and calculate pathes
 		pathes = {}
 		for item in self.items:
-			hvostik = item['unid'] + os.sep + self.browser['unid'] + os.sep
+			path_suffix = item['unid'] + os.sep + self.browser['unid'] + os.sep
 			pathes[ item['unid'] ] = {
 				'abs': {
-					'approved_dir': self.root + os.sep + 'approved' + os.sep + hvostik,
-					'report_dir': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik,
-					'approved_path': self.root + os.sep + 'approved' + os.sep + hvostik + 'approved.png',
-					'actual_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'actual.png',
-					'approved_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'approved_report.png',
-					'diff_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'diff.png', 
+					'approved_dir': self.root + os.sep + 'approved' + os.sep + path_suffix,
+					'report_dir': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix,
+					'approved_path': self.root + os.sep + 'approved' + os.sep + path_suffix + 'approved.png',
+					'actual_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'actual.png',
+					'approved_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'approved_report.png',
+					'diff_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'diff.png', 
 				}
 			}
 		return pathes
@@ -140,8 +140,8 @@ class Worker(threading.Thread):
 	"""
 	def createFolders(self):
 		for item_unid,item_dict in self.pathes.iteritems():
-				if ( os.path.isdir( item_dict['abs']['report_dir'] ) == False ):
-					os.makedirs( item_dict['abs']['report_dir'] , 0777 )
+			if ( os.path.isdir( item_dict['abs']['report_dir'] ) == False ):
+				os.makedirs( item_dict['abs']['report_dir'] , 0777 )
 
 	"""
 	This function do work with taked screenshot
