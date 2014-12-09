@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading,ctypes
+import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading
 from bottle import bottle
 from pedant.webapp import *
 from pedant.screenshots import Application as PedantScreens
@@ -585,10 +585,10 @@ def index():
 				messages.append( "Project " + prj_name + " been created" )
 				os.makedirs( project_path , 0777 )
 			# create symlink for config
-			os.symlink( file, config_link )
+			app.symlink( file, config_link )
 			# if urls.json file exists - create symlink to it too
 			if ( os.path.isfile( urls_file ) ):
-				os.symlink( urls_file, urls_link )
+				app.symlink( urls_file, urls_link )
 		return { "status":'OK', "msg": '<br>'.join(messages), "projects": get_project_list() }
 	return json_error( "Sorry. Directory not found" )
 
