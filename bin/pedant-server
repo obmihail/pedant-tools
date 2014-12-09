@@ -488,17 +488,19 @@ def index( name ):
 			prj_config = app.check_config( prj_config )
 			if prj_config.has_key( 'error' ):
 				return {'status':'ERROR', 'msg': prj_config['error'] }
+			# get urls from post
+			prj_config['urls'] = app.make_urls_from_list( prj_config['urls'] )
 		#read config from file
 		else:
 			prj_config = app.get_project_config( prj_dir )
+			# get urls from file
+			urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json'
+			if os.path.isfile(urls_file):
+				prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
+			else:
+				return {'status':'ERROR', 'msg': 'Urls file not found in project dir. Can not continue' }
 		prj_config['logging'] = True
 		prj_config['data_storage_root'] = prj_dir
-		#urls
-		urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json'
-		if os.path.isfile(urls_file):
-			prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
-		else:
-			return {'status':'ERROR', 'msg': 'Urls file not found in project dir. Can not continue' }
 		if not prj_config['modes'].has_key( mode ):
 			return { 'status':'ERROR', 'msg':" Bad mode" }
 		app.configure( prj_config, mode )
