@@ -7,8 +7,8 @@ class PedantStandartHandlers:
 	def __init__(self,browser):
 		self.browser = browser
 
-	def before_screenshot(self,item):
-		return True
+	def before_screenshot(self,item,browser):
+		pass
 
 	"""
 	@param js - javascript code with return bool value
