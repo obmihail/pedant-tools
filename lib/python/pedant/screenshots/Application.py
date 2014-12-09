@@ -64,17 +64,17 @@ class Application:
 
 		return self
 
-	def symlink( self, from_path, to_path ):
-		if hasattr(sys, 'getwindowsversion'):
-			kdll = ctypes.windll.LoadLibrary("kernel32.dll")
-			if from_path is not None and os.path.isdir(source):
-				flags = 1
-			else:
-				flags = 0
-			if ( kdll.CreateSymbolicLinkA( from_path, to_path, flags) == 0 ):
-				raise ctypes.WinError()
+	def symlink(self, source, link_name):
+		os_symlink = getattr(os, "symlink", None)
+		if callable(os_symlink):
+			os_symlink(source, link_name)
 		else:
-			os.symlink( from_path, to_path )
+			csl = ctypes.windll.kernel32.CreateSymbolicLinkW
+			csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+			csl.restype = ctypes.c_ubyte
+			flags = 1 if os.path.isdir(source) else 0
+			if csl(link_name, source, flags) == 0:
+				raise ctypes.WinError( descr='Symlink not created. For this feature, you need run pedant-server.bat as admin user' )
 
 	def create_symlinks( self, source_dir ):
 		prj_root = self.config['data_storage_root']
