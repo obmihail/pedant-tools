@@ -1,8 +1,7 @@
-import time,Worker,sys,datetime,json,os,re,glob,threading,ctypes
+import time,Worker,sys,datetime,json,os,re,glob,threading,ctypes, shutil
 
 class Application:
 	
-
 	def __init__(self):	
 		#workers list
 		self.workers = []
@@ -17,20 +16,18 @@ class Application:
 		#prev_mess_len
 		self.prev_mess_len = 0
 
-	def configure(self, config, mode):
+	def configure(self, config, mode, timestamp = False ):
 		#current timestamp
-		self.timestamp = time.time()
-
+		self.timestamp = time.time() if timestamp == False else timestamp
+		
 		#create working directory if not exists
-		if ( not os.path.isdir( config['data_storage_root'] ) ):
-			os.makedirs( config['data_storage_root'] )
-
+		os.makedirs( config['data_storage_root'] ) if not os.path.isdir( config['data_storage_root'] ) else None
+		
 		if ( config.has_key('logging') and config['logging'] is True ):
 			#filepath
 			self.log_file = config['data_storage_root'] + os.sep + 'logs' + os.sep + str( self.timestamp ) + '.log'
 			#create dir
-			if ( not os.path.isdir( os.path.dirname( self.log_file ) ) ):
-				os.makedirs( os.path.dirname( self.log_file ) )
+			os.makedirs( os.path.dirname( self.log_file ) ) if not os.path.isdir( os.path.dirname( self.log_file ) ) else None
 
 		self.config = config
 		self.lock_file_path = config['data_storage_root'] + os.sep + 'lock.file'
@@ -163,7 +160,7 @@ class Application:
 		if not local_config.has_key("prj_name"):
 			config['prj_name'] = prj_name
 		else:
-			config['prj_name'] = local_config['prj_name']
+			config['prj_name'] = re.sub( '[^0-9a-zA-Z_]+', '_', local_config['prj_name'] )
 		return config#self.check_config( config )
 
 	def save_project_config(self, prj_dir, config):
@@ -268,7 +265,7 @@ class Application:
 		
 		#check project name
 		normalized_name = re.sub('[^0-9a-zA-Z_]+', '_', config['prj_name'])
-		if ( len(normalized_name) < 1):
+		if ( len(normalized_name) < 1 or normalized_name != config['prj_name'] ):
 			config['error'] += ' Project name ' + config['prj_name'] + ' is invalid'
 		config['prj_name'] = normalized_name
 		
@@ -298,6 +295,9 @@ class Application:
 			out.append(mylist[int(last):int(last + avg)])
 			last += avg
 		return out
+
+	def access(self):
+		return not os.path.isfile( self.lock_file_path ) and os.path.isdir( self.config['data_storage_root'] ) and os.access( self.config['data_storage_root'], os.W_OK )
 
 	"""
 	Job. Start all workers, print info and return when it's finished
@@ -361,3 +361,131 @@ class Application:
 		sys.stdout.write( "\r" * self.prev_mess_len + message )
 		sys.stdout.flush()
 		self.prev_mess_len = len(message)
+
+	def approve_image( self, item, browser ):
+		pathes = generate_pathes( os.path.dirname( self.config['data_storage_root'] ), os.path.basename( self.config['data_storage_root'] ), self.timestamp, item, browser )
+		#backup approved image in report dir
+		os.remove( pathes['approved_report_image_bckp'] ) if os.path.isfile( pathes['approved_report_image_bckp'] ) else None
+		os.rename( pathes['approved_report_image'], pathes['approved_report_image_bckp'] ) if os.path.isfile( pathes['approved_report_image'] ) else None
+		#backup diff image in report dir
+		os.remove( pathes['diff_image_bckp'] ) if os.path.isfile( pathes['diff_image_bckp'] ) else None
+		os.rename( pathes['diff_image'], pathes['diff_image_bckp'] ) if os.path.isfile( pathes['diff_image'] ) else None
+		#backup approved image in approved dir
+		os.remove( pathes['approved_image_bckp'] ) if os.path.isfile( pathes['approved_image_bckp'] ) else None
+		os.rename( pathes['approved_image'], pathes['approved_image_bckp'] ) if os.path.isfile( pathes['approved_image'] ) else None
+		#backup json
+		os.remove( pathes['report_json_bckp'] ) if os.path.isfile( pathes['report_json_bckp'] ) else None
+		os.rename( pathes['report_json'], pathes['report_json_bckp'] ) if os.path.isfile( pathes['report_json'] ) else None
+		#get json data from backuped report
+		json_report = json.loads( open( pathes['report_json_bckp'] ).read() )
+		
+		#create approved folder if it's need
+		os.makedirs(os.path.dirname( pathes['approved_image'] )) if not os.path.isdir( os.path.dirname(pathes['approved_image']) ) else None
+		#copy actual to approved and report
+		shutil.copyfile( pathes['actual_image'], pathes['approved_image'] )
+		shutil.copyfile( pathes['actual_image'], pathes['approved_report_image'] )
+		
+		#update json, save it to file
+		json_report['msg'] = "success"
+		obj = open( pathes['report_json'] , 'wb')
+		json.dump( json_report, obj )
+		obj.close
+
+		#images web pathes
+		json_report['images'] = {
+			'actual': pathes['actual_image_web'] if os.path.isfile( pathes['actual_image'] ) else False,
+			'approved': pathes['approved_image_web'] if os.path.isfile( pathes['approved_image'] ) else False,
+			'approved_report': pathes['approved_report_image_web'] if os.path.isfile( pathes['approved_report_image'] ) else False,
+			'diff': pathes['diff_image_web'] if os.path.isfile( pathes['diff_image'] ) else False,
+		}
+		return json_report
+
+	def cancel_approve_image( self, item, browser ):
+		pathes = generate_pathes( os.path.dirname( self.config['data_storage_root'] ), os.path.basename( self.config['data_storage_root'] ) , self.timestamp, item, browser )
+		
+		#web imgs pathes
+		approved_img_web = False
+		approved_report_img_web = False
+		diff_img_web = False
+
+		#restore image im approved
+		os.remove( pathes['approved_image'] ) if os.path.isfile( pathes['approved_image'] ) else None
+		os.rename( pathes['approved_image_bckp'], pathes['approved_image'] ) if os.path.isfile( pathes['approved_image_bckp'] ) else None
+		#restore approved image in report
+		os.remove( pathes['approved_report_image'] ) if os.path.isfile( pathes['approved_report_image'] ) else None
+		os.rename( pathes['approved_report_image_bckp'], pathes['approved_report_image'] ) if os.path.isfile( pathes['approved_report_image_bckp'] ) else None
+		#restore diff image
+		os.remove( pathes['diff_image'] ) if os.path.isfile( pathes['diff_image'] ) else None
+		os.rename( pathes['diff_image_bckp'], pathes['diff_image'] ) if os.path.isfile( pathes['diff_image_bckp'] ) else None
+		#restore report.json
+		os.remove( pathes['report_json'] ) if os.path.isfile( pathes['report_json'] ) else None
+		os.rename( pathes['report_json_bckp'], pathes['report_json'] ) if os.path.isfile( pathes['report_json_bckp'] ) else None
+		#read report
+		json_report = json.loads( open( pathes['report_json'] ).read() )
+		#set images
+		json_report['images'] = {
+			'actual': pathes['actual_image_web'] if os.path.isfile( pathes['actual_image'] ) else False,
+			'approved': pathes['approved_image_web'] if os.path.isfile( pathes['approved_image'] ) else False,
+			'approved_report': pathes['approved_report_image_web'] if os.path.isfile( pathes['approved_report_image'] ) else False,
+			'diff': pathes['diff_image_web'] if os.path.isfile( pathes['diff_image'] ) else False,
+		}
+		return json_report
+
+	def get_report(self):
+		data = list()
+		print glob.glob( self.config['data_storage_root'] + os.sep + 'reports' + os.sep + self.timestamp + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' )
+		for json_path in glob.glob( self.config['data_storage_root'] + os.sep + 'reports' + os.sep + self.timestamp + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' ):
+			json_content=open(json_path)
+			json_report = json.load(json_content)
+			json_content.close()
+			pathes = generate_pathes( os.path.dirname( self.config['data_storage_root'] ), os.path.basename( self.config['data_storage_root'] ) , self.timestamp, json_report['item']['unid'], json_report['browser']['unid'] )
+			#set images
+			json_report['images'] = {
+				'actual': pathes['actual_image_web'] if os.path.isfile( pathes['actual_image'] ) else False,
+				'approved': pathes['approved_image_web'] if os.path.isfile( pathes['approved_image'] ) else False,
+				'approved_report': pathes['approved_report_image_web'] if os.path.isfile( pathes['approved_report_image'] ) else False,
+				'diff': pathes['diff_image_web'] if os.path.isfile( pathes['diff_image'] ) else False,
+			}
+			data.append( json_report )
+		return data
+
+	def get_approved_images(self):
+		pathes = generate_pathes( os.path.dirname( self.config['data_storage_root'] ), os.path.basename( self.config['data_storage_root'] ) )
+		data = list()
+		for img in glob.glob( pathes['approved_dir'] + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png' ):
+			itemname = os.path.basename( os.path.dirname( os.path.dirname( img ) ) )
+			browser = os.path.basename( os.path.dirname( img ) )
+			item_pathes = generate_pathes( os.path.dirname( self.config['data_storage_root'] ), os.path.basename( self.config['data_storage_root'] ), '', itemname, browser )
+			data.append( 
+				{ 'name':itemname,
+				'browser':browser,
+				'images': { 
+					'approved': item_pathes['approved_image_web'] if os.path.isfile( item_pathes['approved_image'] ) else False,
+					} 
+				})
+		return data
+
+#get pathes for items
+def generate_pathes( ds_root, prj_name, timestamp = '', item = '', browser = '' ):
+	pathes = {
+		'prj_root': os.path.realpath( (ds_root + os.sep + '%s') % (prj_name) ),
+		#approved images
+		'approved_dir': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'approved') % (prj_name) ),
+		'approved_image': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'approved' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'approved.png') % ( prj_name, item, browser ) ),
+		'approved_image_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'approved' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'approved.png.bckp') % ( prj_name, item, browser ) ),
+		'approved_image_web':  '/projects/%s/static/approved/%s/%s/approved.png' % ( prj_name, item, browser ),
+		#
+		'reports_dir': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports') % prj_name ),
+		#report
+		'approved_report_image': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'approved_report.png' ) % ( prj_name, timestamp, item, browser ) ), 
+		'approved_report_image_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'approved_report.bckp' ) % ( prj_name, timestamp, item, browser ) ), 
+		'approved_report_image_web': '/projects/%s/static/reports/%s/%s/%s/approved_report.png' % ( prj_name, timestamp, item, browser ),
+		'actual_image': os.path.realpath( ( ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'actual.png' ) % ( prj_name, timestamp, item, browser ) ), 
+		'actual_image_web': '/projects/%s/static/reports/%s/%s/%s/actual.png' % ( prj_name, timestamp, item, browser ),
+		'diff_image': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'diff.png') % ( prj_name, timestamp, item, browser ) ),
+		'diff_image_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'diff.png.bckp') % ( prj_name, timestamp, item, browser ) ),
+		'diff_image_web': '/projects/%s/static/reports/%s/%s/%s/actual.png' % ( prj_name , timestamp, item, browser ),
+		'report_json': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'report.json') % ( prj_name, timestamp, item, browser ) ),
+		'report_json_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'report.json.bckp') % ( prj_name, timestamp, item, browser ) )
+	}
+	return pathes

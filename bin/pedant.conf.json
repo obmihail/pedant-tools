@@ -3,23 +3,6 @@
 "web": {
 	"host" : "localhost",
 	"port" : 8081
-},
-
-"screens" : {
-	
-	"max_workers" : 4,
-	"url_mask" : "http://localhost:8080/mystaticfiles/production/#ITEM_NAME#",
-	"fast" : [ 
-			{ "name":"PhantomJS", 
-			  "window_size": [800,600], 
-			  "wd_url": "http://127.0.0.1:4445/wd/hub" , 
-			  "desired_capabilities": {"phantomjs.page.settings.resourceTimeout": "1000"} }
-	],
-	"full" : [
-		{ "name":"PhantomJS", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub" },	
-		{ "name":"Firefox", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub" },
-		{ "name":"Firefox", "window_size":[1024,768], "wd_url": "http://127.0.0.1:4444/wd/hub" }
-	]
 }
 
 }

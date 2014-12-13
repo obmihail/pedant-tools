@@ -180,9 +180,11 @@ class Worker(threading.Thread):
 		#print "save result for file \n" 
 		obj = open( self.pathes[item['unid']]['abs']['report_dir'] + os.sep + 'report.json' , 'wb')
 		self.log( "Save report for item: " + item['url'] )
+		bro = self.browser.copy()
+		del bro['instance']
 		json.dump( {
 				'item' : item,
-				'browser' : { 'name': self.browser['unid'], 'info' : self.browser['info'], 'unid':self.browser['unid'] },
+				'browser' : bro,
 				'window_size': self.browser['window_size'],
 				'msg' : msg,
 				}, 

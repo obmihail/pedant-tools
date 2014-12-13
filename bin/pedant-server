@@ -3,6 +3,7 @@ import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading
 from bottle import bottle
 from pedant.webapp import *
 from pedant.screenshots import Application as PedantScreens
+from pedant.screenshots.Application import generate_pathes
 
 """
 TODO: REFACTORING. Move operations to pedant package
@@ -23,52 +24,24 @@ app = bottle.Bottle()
 bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
 
+def json_error( err_type, str_data ):
+	messages = {
+		'DEFAULT': '{0}',
+		'PATH_PERMISSION': 'Have not permission for path <{}>',
+		'PATH_NOT_FOUND': 'File ({}) not found',
+		'PRJ_ACCESS': 'Project ({}) is locked. Stop all instances of pedant and remove lock file in project folder for continue',
+		'BAD_ACTION': 'Unknown action ({})',
+		'BAD_DATA': 'Bad data ({})',
+	}
+	if not messages.has_key( err_type ):
+		err_type = 'DEFAULT'
 
-def accessible( prj ):
-	return ( os.path.isdir( config[ 'data_storage_root' ] + os.sep + prj ) and ( not os.path.isfile( config[ 'data_storage_root' ] + os.sep + prj + os.sep + 'lock.file') ) )
+	return { 'status':'ERROR', 'msg': messages[ err_type ].format( str_data ) }
 
-def json_error( message ):
-	return { 'status':'ERROR', 'msg':message }
-
-def access_error( project ):
-	return json_error( 'Operation for project ('+config['data_storage_root']+os.sep+project+os.sep+') failed. Causes: lock file (lock.file) is exists. Pedant-screens can be running. Project not exists or report file is broken')
-
-def get_report_data( project, timestamp ):
-	prj_root = config['data_storage_root'] + os.sep + project
-	approved_root = prj_root + os.sep + 'approved'
-	report_root = prj_root + os.sep + 'reports' + os.sep + timestamp
-	data = list()
-	for json_path in glob.glob( report_root + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' ):
-		json_content=open(json_path)
-		json_data = json.load(json_content)
-		json_content.close()
-		json_data['images'] = { 'approved': False, 'actual': False, 'approved_report': False, 'diff': False}
-		approved_path = approved_root + os.sep + json_data['item']['unid'] + os.sep + json_data['browser']['unid'] + os.sep + 'approved.png'
-		report_dir = report_root + os.sep + json_data['item']['unid'] + os.sep + json_data['browser']['unid'] + os.sep
-		#check images exists
-		if os.path.isfile( approved_path ):
-			json_data['images']['approved'] = '/projects/' + project + '/static/approved/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved.png'
-		if os.path.isfile( report_dir + 'approved_report.png' ):
-			json_data['images']['approved_report'] = '/projects/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'approved_report.png'
-		if os.path.isfile( report_dir + 'actual.png' ):
-			json_data['images']['actual'] = '/projects/' + project + '/static/reports/' + timestamp + '/' +  json_data['item']['unid']  + '/' + json_data['browser']['unid'] + os.sep + 'actual.png'
-		if os.path.isfile( report_dir + 'diff.png' ):
-			json_data['images']['diff'] = '/projects/' + project + '/static/reports/' + timestamp + '/' + json_data['item']['unid'] + '/' + json_data['browser']['unid'] + os.sep + 'diff.png'		
-		data.append( json_data )
-	return data
-
-
-def get_approved_images( project ):
-	approved_root = config['data_storage_root'] + os.sep + project + os.sep + 'approved' 
-	web_path_root = "/projects/" + project + '/static/approved/'
-	data = list()
-	#print  approved_root + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png'
-
-	for img in glob.glob( approved_root + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png' ):
-		itemname = os.path.basename( os.path.dirname( os.path.dirname( img ) ) )
-		browser = os.path.basename( os.path.dirname( img ) )
-		data.append( { 'name':itemname,'browser':browser,'image':web_path_root + '/' + itemname + '/' + browser + '/approved.png' } )
-	return data
+def json_data( msg = 'OK' , additional = {} ):
+	answer = { 'status':'OK', 'msg': msg }
+	answer.update( additional )
+	return answer
 
 #pedant static
 @app.route('/assets/<path:path>')
@@ -78,7 +51,8 @@ def callback(path):
 #pedant report images
 @app.route('/projects/<project>/static/<path:path>')
 def callback(project,path):
-    return bottle.static_file(path,config['data_storage_root']+os.sep+project)
+	print config['data_storage_root']+os.sep+project + path 
+	return bottle.static_file(path,config['data_storage_root']+os.sep+project)
 
 #coming soon page
 @app.route('/coming_soon')
@@ -127,6 +101,17 @@ def index():
 	return { 
 		'config': prj_config , 
 		'action':'add', 
+		'default_browsers' : {
+			"ANDROID" : { 'unid':"ANDROID_800x600", 'type':"ANDROID", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome android browser", 'desired_capabilities': {'platform': 'ANDROID', 'browserName': 'android', 'version': '', 'javascriptEnabled': True} },
+			"CHROME" : { 'unid':"CHROME_800x600", 'type':"CHROME", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome chrome browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'chrome', 'version': '', 'javascriptEnabled': True} },
+			"FIREFOX" : { 'unid':"FIREFOX_800x600", 'type':"FIREFOX", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome firefox browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'firefox', 'version': '', 'javascriptEnabled': True} },
+			"INTERNETEXPLORER" : { 'unid':"INTERNETEXPLORER_800x600", 'type':"INTERNETEXPLORER", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "IE", 'desired_capabilities': {'platform': 'WINDOWS', 'browserName': 'internet explorer', 'version': '', 'javascriptEnabled': True} },
+			"IPAD" : { 'unid':"IPAD_800x600", 'type':"IPAD", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome ipad browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPad', 'version': '', 'javascriptEnabled': True} },
+			"IPHONE" : { 'unid':"IPHONE_800x600", 'type':"IPHONE", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome iphone browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPhone', 'version': '', 'javascriptEnabled': True} },
+			"OPERA" : { 'unid':"OPERA_800x600", 'type':"OPERA", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome opera browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'opera', 'version': '', 'javascriptEnabled': True} },
+			"PHANTOMJS" : { 'unid':"PHANTOMJS_800x600", 'type':"PHANTOMJS", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome phantom browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'phantomjs', 'version': '', 'javascriptEnabled': True, "phantomjs.page.settings.resourceTimeout": "3000" } },
+			"SAFARI" : { 'unid':"SAFARI_800x600", 'type':"SAFARI", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome safari browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'safari', 'version': '', 'javascriptEnabled': True} }
+		},
 		'config_str':json.dumps( prj_config ) ,
 		'crumbs': [ 
 			{'additional_class':'','link':'/','text':'Home'},
@@ -155,6 +140,17 @@ def index( project ):
 		'config': prj_config,
 		'action':'update', 
 		'config_str':json.dumps( prj_config ),
+		'default_browsers' : json.dumps( {
+			"ANDROID" : { 'unid':"ANDROID_800x600", 'type':"ANDROID", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome android browser", 'desired_capabilities': {'platform': 'ANDROID', 'browserName': 'android', 'version': '', 'javascriptEnabled': True} },
+			"CHROME" : { 'unid':"CHROME_800x600", 'type':"CHROME", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome chrome browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'chrome', 'version': '', 'javascriptEnabled': True} },
+			"FIREFOX" : { 'unid':"FIREFOX_800x600", 'type':"FIREFOX", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome firefox browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'firefox', 'version': '', 'javascriptEnabled': True} },
+			"INTERNETEXPLORER" : { 'unid':"INTERNETEXPLORER_800x600", 'type':"INTERNETEXPLORER", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "IE", 'desired_capabilities': {'platform': 'WINDOWS', 'browserName': 'internet explorer', 'version': '', 'javascriptEnabled': True} },
+			"IPAD" : { 'unid':"IPAD_800x600", 'type':"IPAD", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome ipad browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPad', 'version': '', 'javascriptEnabled': True} },
+			"IPHONE" : { 'unid':"IPHONE_800x600", 'type':"IPHONE", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome iphone browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPhone', 'version': '', 'javascriptEnabled': True} },
+			"OPERA" : { 'unid':"OPERA_800x600", 'type':"OPERA", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome opera browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'opera', 'version': '', 'javascriptEnabled': True} },
+			"PHANTOMJS" : { 'unid':"PHANTOMJS_800x600", 'type':"PHANTOMJS", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome phantom browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'phantomjs', 'version': '', 'javascriptEnabled': True, "phantomjs.page.settings.resourceTimeout": "3000" } },
+			"SAFARI" : { 'unid':"SAFARI_800x600", 'type':"SAFARI", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome safari browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'safari', 'version': '', 'javascriptEnabled': True} }
+		} ),
 		'crumbs': [ 
 			{'additional_class':'','link':'/','text':'Home'},
 			{'additional_class':'', 'link':'/projects','text':'Projects'},
@@ -167,7 +163,10 @@ def index( project ):
 @bottle.view('prj_launch.tpl')
 def index( project ):
 	#read config from json file
-	prj_config = json.load( open( config['data_storage_root'] + os.sep + project + os.sep + 'pedant.json' ) )
+	app = PedantScreens.Application()
+	prj_dir = config['data_storage_root'] + os.sep + project
+	if ( os.path.isdir(prj_dir) ):
+		prj_config = app.get_project_config( prj_dir )
 	urls_file = config['data_storage_root'] + os.sep + project + os.sep + 'urls.json' 
 	if os.path.isfile( urls_file ):
 		prj_config['urls'] = json.load( open( urls_file ) )
@@ -203,14 +202,20 @@ def index(project):
 @app.route('/projects/<project>/reports/last')
 @bottle.view('prj_report.tpl')
 def index(project):
-	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
+	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
 	if len( rep_list ) < 1:
 		bottle.redirect( "/projects/" + project + "/reports")
+	pathes = generate_pathes( config['data_storage_root'], project )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , rep_list[0] )
+
 	return { 
 		'project': project, 
 		'timestamp': rep_list[0] , 
-		'report_list': json.dumps( get_report_data( project , rep_list[0] ) ),
+		'report_list': json.dumps( app.get_report() ),
 		'crumbs': [ 
 				{'additional_class':'','link':'/','text':'Home'},
 				{'additional_class':'', 'link':'/projects','text':'Projects'},
@@ -223,10 +228,15 @@ def index(project):
 @app.route('/projects/<project>/reports/<timestamp>')
 @bottle.view('prj_report.tpl')
 def index(project,timestamp):
+	pathes = generate_pathes( config['data_storage_root'], project )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , timestamp )
 	return { 
 		'project': project,
 		'timestamp' :timestamp, 
-		'report_list' : json.dumps( get_report_data( project , timestamp ) ),
+		'report_list' : json.dumps( app.get_report() ),
 		'crumbs': [ 
 				{'additional_class':'','link':'/','text':'Home'},
 				{'additional_class':'', 'link':'/projects','text':'Projects'},
@@ -239,9 +249,14 @@ def index(project,timestamp):
 @app.route('/projects/<project>/approved')
 @bottle.view('prj_approved.tpl')
 def index(project):
+	pathes = generate_pathes( config['data_storage_root'], project )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' )
 	return { 
 		'project': project, 
-		'items': json.dumps( get_approved_images( project ) ),
+		'items': json.dumps( app.get_approved_images() ),
 		'crumbs': [ 
 				{'additional_class':'','link':'/','text':'Home'},
 				{'additional_class':'', 'link':'/projects','text':'Projects'},
@@ -258,139 +273,59 @@ def index(project,item):
 @app.route('/ajax/projects/<project>/approve/<timestamp>/<item>/<browser>')
 def approve(project,timestamp,item,browser):
 
-	item_dir = item + os.sep + browser + os.sep
-	item_web_path = item + '/' + browser + '/'
-	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
-	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'
+	pathes = generate_pathes( config['data_storage_root'], project, timestamp, item, browser )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , timestamp )
 
-	if accessible( project ) and os.path.isfile( report_dir + 'report.json' ):
-		#if approved_report exists - backup it to {original_path}.bckp
-		if os.path.isfile( report_dir + 'approved_report.bckp' ):
-			os.remove( report_dir + 'approved_report.bckp' )
-		if os.path.isfile( report_dir + 'approved_report.png'):
-			os.rename( report_dir + 'approved_report.png' , report_dir + 'approved_report.bckp' )
-		#backup diff
-		if os.path.isfile( report_dir + 'diff.bckp' ):
-			os.remove( report_dir + 'diff.bckp' )
-		if os.path.isfile( report_dir + 'diff.png'):
-			os.rename( report_dir + 'diff.png' , report_dir + 'diff.bckp' )
-		#backup global approved
-		if os.path.isfile( approved_path + '.bckp' ):
-			os.remove( approved_path + '.bckp' )
-		if os.path.isfile( approved_path):
-			os.rename( approved_path, approved_path + '.bckp' )
-		#backup json
-		if os.path.isfile( report_dir + 'report.bckp' ):
-			os.remove( report_dir + 'report.bckp' )
-
-		os.rename( report_dir + 'report.json', report_dir + 'report.bckp' )
-		#get original json data
-		json_file=open(report_dir + 'report.bckp')
-		json_data = json.load(json_file)
-		json_file.close()
-
-		#create approved folder if it's need
-		if not os.path.isdir( os.path.dirname(approved_path) ):
-			os.makedirs(os.path.dirname(approved_path))
-		#copy actual to approved and report
-		shutil.copyfile( report_dir + 'actual.png', approved_path )
-		shutil.copyfile( report_dir + 'actual.png', report_dir + 'approved_report.png' )
-		#update json, save it to file
-		json_data['msg'] = "success"
-		obj = open( report_dir + 'report.json' , 'wb')
-		json.dump( json_data, obj )
-		obj.close
-		#additional info
-		json_data['status'] = "OK"
-		#images html
-		json_data['images'] = {
-			'actual': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'actual.png',
-			'approved': '/projects/' + project + '/static/approved/' + item_web_path + 'approved.png',
-			'approved_report': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png',
-			'diff': False
-		}
-		#return data
-		return json_data
-	return access_error( project )
+	if app.access() and os.path.isfile( pathes['report_json'] ):
+		return json_data( '' , app.approve_image( item, browser ) )
+	return json_error( 'PRJ_ACCESS', project )
 
 #delete approved image
 @app.route('/ajax/projects/<project>/images/approved/delete/<item>/<browser>')
-def cancel_approve(project,item,browser):
-	file_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item + os.sep + browser + os.sep + 'approved.png'
-	if os.path.isfile( file_path ):
-		os.remove( file_path )
-		return { 'status':'OK', 'msg':'Image ('+file_path+') removed'}
-	return { 'status':'ERROR', 'msg':'Image ('+file_path +') not found'}
+def delete_approved(project,item,browser):
+	pathes = generate_pathes( config['data_storage_root'], project, '', item, browser )
+	os.remove( pathes['approved_image'] ) if os.path.isfile( pathes['approved_image'] ) else None
+	#if have not approved - success result	
+	return json_data( 'Image ('+pathes['approved_image']+') removed' ) if not os.path.isfile( pathes['approved_image'] ) else None
+	#error
+	return json_error( 'PATH_NOT_FOUND' , file_path )
 
 #disapprove actual image in project file
 @app.route('/ajax/projects/<project>/cancel-approve/<timestamp>/<item>/<browser>')
 def cancel_approve(project,timestamp,item,browser):
-	item_dir = item + os.sep + browser + os.sep
-	item_web_path = item + '/' + browser + '/'
-	report_dir = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep + item_dir
-	approved_path = config['data_storage_root'] + os.sep + project + os.sep + 'approved' + os.sep + item_dir + os.sep + 'approved.png'	
-	if accessible( project ) and os.path.isfile( report_dir + 'report.bckp' ):
-		#web imgs pathes
-		approved_img_web = False
-		approved_report_img_web = False
-		diff_img_web = False
-		#restore backup approved
-		if os.path.isfile( approved_path ):
-			os.remove(approved_path)
-		if os.path.isfile( approved_path + '.bckp' ):
-			os.rename( approved_path + '.bckp', approved_path )
-			approved_img_web = '/projects/' + project + '/static/approved/' + item_web_path + 'approved.png'
-		
-		#restore backup approved_report
-		if os.path.isfile( report_dir + 'approved_report.png' ):
-			os.remove(report_dir + 'approved_report.png')
-		if os.path.isfile( report_dir + 'approved_report.bckp' ):
-			os.rename( report_dir + 'approved_report.bckp' , report_dir + 'approved_report.png' )
-			approved_report_img_web = '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'approved_report.png'
-		
-		if os.path.isfile( report_dir + 'diff.png' ):
-			os.remove( report_dir + 'diff.png' )
-		#restore backup diff
-		if os.path.isfile( report_dir + 'diff.bckp' ):
-			os.rename( report_dir + 'diff.bckp' , report_dir + 'diff.png' )
-			diff_img_web = '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'diff.png'
+	pathes = generate_pathes( config['data_storage_root'], project, timestamp, item, browser )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , timestamp )
 
-		#restore report.json
-		if os.path.isfile( report_dir + 'report.json' ):
-			os.remove( report_dir + 'report.json' )
-		
-		os.rename( report_dir + 'report.bckp' , report_dir + 'report.json' )
-		#read report
-		json_file=open(report_dir + 'report.json')
-		json_data = json.load(json_file)
-		json_file.close()
-		json_data['images'] = {
-			'actual': '/projects/' + project + '/static/reports/' + timestamp + '/' + item_web_path + 'actual.png',
-			'approved': approved_img_web,
-			'approved_report': approved_report_img_web,
-			'diff': diff_img_web
-		}
-		json_data['status'] = "OK"
-		return json_data
-	return access_error( project )
+	if app.access() and os.path.isfile( pathes['report_json_bckp'] ):
+		return json_data( '', app.cancel_approve_image( item, browser ) )
+	return json_error( 'PRJ_ACCESS' , project )
 
 #approve json
 @app.post( "/ajax/projects/image/<action>")
 def ajax( action ):
-	json_data = json.load(bottle.request.body)
+	json_post = json.load(bottle.request.body)
 	if action in ( 'approve', 'cancel-approve'):
-		return approve_or_cancel_action(json_data)
-	return { 'status':'ERROR', 'msg':'BAD ACTION: '+action }
+		return approve_or_cancel_action(json_post)
+	return json_error( 'DEFAULT', 'BAD ACTION: '+action )
 
-def approve_or_cancel_action( json_data ):
+def approve_or_cancel_action( json_post ):
 	json_answer = { "status":'OK', "msg": "Success", "items":[] }
-	for item in json_data:
+	for item in json_post:
 		try:
 			route = app.match({'PATH_INFO': item['path'], 'REQUEST_METHOD': 'GET'} )
 			item_result = json.loads(route[0].call( **route[1] ) )
-		except:
-			item_result = {'status': 'ERROR', 'msg': 'Error. Bad request data: path: ' + item['path']+ ' num:' + item['num'] }
+			if item_result['status'] != 'OK':
+				json_answer['status'] = item_result['status']
+		except Exception as e:
+			item_result = {'status': 'ERROR', 'msg': ( 'Error ' + item['path'] + ', el_id: ' + item['element_id'] + 'Exception (%s)' % str(e) ) }
 			json_answer['status'] = "ERROR"
+		json_answer['msg'] += item_result['msg'] + '<br>'
 		item_result[ 'element_id' ] = item['element_id']
 		json_answer['items'].append( item_result )
 	return json_answer
@@ -399,21 +334,26 @@ def approve_or_cancel_action( json_data ):
 @app.route('/ajax/projects/<project>/delete/report/<timestamp>')
 def index(project,timestamp):
 	#remove report
-	if accessible( project ):
+	pathes = generate_pathes( config['data_storage_root'], project, timestamp )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , timestamp )
+	if app.access():
 		path = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep
 		if os.path.isdir( path ):
 			shutil.rmtree( path )
-			return {'status':'OK','msg':'Removed'}
+			return json_data( 'Removed' )
 		else:
-			return {'status':'ERROR', 'msg':'Report not exists'}
+			return json_error( 'PATH_NOT_FOUND', path )
 	return access_error( project )
 
 #add new project from web interface
 @app.post( "/ajax/projects/add" )
 def ajax():
-	json_data = json.load(bottle.request.body)
+	json_post = json.load(bottle.request.body)
 	app = PedantScreens.Application()
-	prj_config = app.check_config( json_data )
+	prj_config = app.check_config( json_post )
 	if (  prj_config.has_key( 'error' ) ):
 		return {'status':'ERROR', 'msg': prj_config['error'] }
 	if prj_config.has_key( 'oldName' ):
@@ -422,16 +362,15 @@ def ajax():
 	config_file = prj_root_dir + os.sep + 'pedant.json'
 	#check root dir not exists
 	if os.path.isdir(prj_root_dir):
-		return {'status':'ERROR', 'msg': 'Project directory with this name already exists ('+prj_root_dir+'). Remove it for continue' }
+		return json_error( 'DEFAULT', 'Project directory with this name already exists ('+prj_root_dir+'). Remove it for continue' )
 	#create project root dir
 	if os.makedirs(prj_root_dir) is False:
-		return { 'status':'ERROR', 'msg': "Can't create project directory ("+prj_root_dir+')' }
+		return json_error('PATH_PERMISSION', prj_root_dir )
 	prj_config = app.save_project_config( prj_root_dir, prj_config )
 	#return result
-	return {'status':'OK', 
-			'msg':'Project updated. You will be redirect to edit page', 
-			'config': prj_config, 
-			'url':'/projects/'+ prj_config['prj_name'] + '/edit'}
+	return json_data( 'Project updated. You will be redirect to edit page', 
+			{'config': prj_config, 'url':'/projects/'+ prj_config['prj_name'] + '/edit'} )
+			
 
 #add new project from web interface
 @app.get( "/ajax/projects/remove/<prj_name>")
@@ -439,18 +378,18 @@ def ajax( prj_name ):
 	prj_dir = config['data_storage_root'] + os.sep + prj_name
 	if (os.path.isdir( prj_dir ) ):
 		shutil.rmtree( prj_dir )
-		return { 'status':'OK', 'msg': "Project "+prj_dir+' deleted' }
+		return json_data( "Project "+prj_dir+' deleted' )
 	else:
-		return { 'status':'ERROR', 'msg': "Directory "+prj_dir+' not exists' }
+		return json_error( 'PATH_NOT_FOUND', prj_dir )
 
 #add new project from web interface
 @app.post( "/ajax/projects/update")
 def ajax():
-	json_data = json.load(bottle.request.body)
+	json_post = json.load(bottle.request.body)
 	app = PedantScreens.Application()
-	prj_config = app.check_config( json_data )
+	prj_config = app.check_config( json_post )
 	if (  prj_config.has_key( 'error' ) ):
-		return {'status':'ERROR', 'msg': prj_config['error'] }
+		return json_error( 'DEFAULT', prj_config['error'] )
 
 	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
 
@@ -460,18 +399,14 @@ def ajax():
 		# check dir is writeable
 		#rename folder
 		if os.path.isdir(prj_root_dir):
-			return {'status':'ERROR', 'msg': 'Project directory with name  ('+prj_root_dir+') already exists. Type another name' }
+			return json_error( 'DEFAULT', 'Project directory with name  ('+prj_root_dir+') already exists. Type another name' )
 		os.rename( old_root_dir , prj_root_dir )
 		#change name in config
 		del prj_config['oldName']
 	app.save_project_config( prj_root_dir, prj_config )
 
 	#return result
-	return {'status':'OK', 
-			'msg':'Project updated. You will be redirect to edit page', 
-			'config': prj_config, 
-			'url':'/projects/'+ prj_config['prj_name'] + '/edit' }
-
+	return json_data( 'Project updated. You will be redirect to edit page' , {'url':'/projects/'+ prj_config['prj_name'] + '/edit'} )
 
 #ajax launch project
 @app.route( '/ajax/projects/<name>/launch/start' , method='POST' )
@@ -483,29 +418,30 @@ def index( name ):
 	else:
 		prj_dir = config['data_storage_root'] + os.sep + name
 		app = PedantScreens.Application()
-		#if config in post - run it
 		if ( prj_config ):
+			#if config in post - run it
 			prj_config = app.check_config( prj_config )
 			if prj_config.has_key( 'error' ):
-				return {'status':'ERROR', 'msg': prj_config['error'] }
+				return json_error('DEFAULT', prj_config['error'] ) 
 			# get urls from post
 			prj_config['urls'] = app.make_urls_from_list( prj_config['urls'] )
-		#read config from file
 		else:
+			#read config from file
 			prj_config = app.get_project_config( prj_dir )
 			# get urls from file
-			urls_file = config['data_storage_root'] + os.sep + name + os.sep + 'urls.json'
+			urls_file = config['data_storage_root'] + os.sep + prj_config['prj_name'] + os.sep + 'urls.json'
+			print urls_file
 			if os.path.isfile(urls_file):
 				prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
 			else:
-				return {'status':'ERROR', 'msg': 'Urls file not found in project dir. Can not continue' }
+				return json_error( 'DEFAULT', 'Urls file not found in project dir. Can not continue' )
 		prj_config['logging'] = True
 		prj_config['data_storage_root'] = prj_dir
 		if not prj_config['modes'].has_key( mode ):
-			return { 'status':'ERROR', 'msg':" Bad mode" }
+			return json_error( 'DEFAULT', 'Bad mode: ' + mode )
 		app.configure( prj_config, mode )
 		if ( not app.lock() ):
-			return { 'status':'ERROR', 'msg':"Failed. Project is locked. Already runned?" }
+			return json_error( 'DEFAULT', "Failed. Project is locked. Already runned?" )
 		t = threading.Thread(target=app.start)
 		t.start()
 		pedant_screen_instances[ name ] = {
@@ -513,10 +449,7 @@ def index( name ):
 			'thread' : t
 		}
 	timestamp = pedant_screen_instances[ name ]["app"].get_timestamp()
-	return { 
-		'status':'OK', 
-		'msg':" Project been started", 
-		'state_url': '/ajax/projects/'+name+'/launch/log/'+ str(timestamp) }
+	return json_data( 'Project been started', { 'state_url': '/ajax/projects/'+name+'/launch/log/'+ str(timestamp) } )
 
 #ajax launch project
 @app.route('/ajax/projects/<name>/launch/stop')
@@ -524,7 +457,7 @@ def index( name ):
 	#find instance
 	if pedant_screen_instances.has_key(name):
 		pedant_screen_instances[ name ]["app"].stop()
-	return { 'status': 'OK', 'msg':'Stop procedure runned. Wait while project been stopped'}
+	return json_data( 'Stop procedure runned. Wait while project been stopped' )
 
 #ajax get project log
 @app.route('/ajax/projects/<name>/launch/log/<timestamp>')
@@ -543,8 +476,8 @@ def index(name,timestamp):
 				state = 'Stopped'
 				#kill instance of app
 				del pedant_screen_instances[ name ]
-		return { 'status':'OK', 'msg': content, 'state': state }
-	return { 'status': 'ERROR', 'msg': 'File ' + log_file + ' not found' }
+		return json_data( content, { 'state': state } )
+	return json_error( 'PATH_NOT_FOUND', log_file )
 
 #find all projects in dir
 #TODO: check file location not in data_storage and create link file
@@ -593,9 +526,10 @@ def index():
 				if ( os.path.isfile( urls_file ) ):
 					app.symlink( urls_file, urls_link )
 			except Exception, e:
-				return { "status":"ERROR", "msg": "%s" %e }
-		return { "status":'OK', "msg": '<br>'.join(messages), "projects": get_project_list() }
-	return json_error( "Sorry. Directory not found" )
+				return json_error( 'DEFAULT', ( '%s' % e ) )
+
+		return json_data( '<br>'.join(messages), { "projects": get_project_list() }  )
+	return json_error( 'PATH_NOT_FOUND' , dirname )
 
 def recursive_projects_search( dirname ):
 	matches = []
@@ -628,32 +562,36 @@ def index(project):
 			#remove tmp file
 			os.remove( zipfilepath )
 			return retfile
-	return json_error( "Sorry. Have not approved files")
+	return json_error( 'DEFAULT' , "Sorry. Have not approved files")
 
 #import approved images
 #todo catch errors
 @app.route('/ajax/projects/<project>/import/approved/zip',method='POST')
 def index(project):
-	if accessible( project ):
+	pathes = generate_pathes( config['data_storage_root'], project )
+	app = PedantScreens.Application()
+	prj_config = app.get_project_config( pathes['prj_root'] )
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	app.configure( prj_config , 'full' , '' )
+
+	if app.access():
 		upload = bottle.request.files.get('upload') 
 		if (upload):
 			name, ext = os.path.splitext(upload.filename)
-			print name
 			if ext not in ('.zip','.ZIP'):
-				return json_error( "File extension " + cgi.escape( ext ) + " not allowed." )
+				return json_error( 'DEFAULT', "File extension " + cgi.escape( ext ) + " not allowed." )
 			if name+".zip" == project+'_approved.zip':
 				file_path = config['tmp_root']+os.sep+ str( uuid.uuid4() )+'.zip'
-				print file_path
 				upload.save(file_path)
 				prj_root = config['data_storage_root'] + os.sep + project + os.sep + 'approved'	
 				if (os.path.isdir(prj_root) ):
 					with zipfile.ZipFile(file_path, "r") as z:
 						z.extractall( project )
-					return { "status":"OK", 'msg':"OK" }
-				return json_error( "Project not exists")
-			return json_error( "Bad file name")
-		return json_error("You forgot send file")
-	return access_error( project )
+					return json_data( 'OK' )
+				return json_error( 'PATH_NOT_FOUND', prj_root )
+			return json_error( 'DEFAULT', "Bad file name")
+		return json_error( 'DEFAULT', "You forgot send file")
+	return json_error( 'PRJ_ACCESS', project )
 
 pedant_screen_instances = {}
 bottle.run( app=app, host=config['web']['host'], port=config['web']['port'])

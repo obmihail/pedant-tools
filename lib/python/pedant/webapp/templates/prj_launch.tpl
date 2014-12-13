@@ -39,7 +39,7 @@
 		<textarea class="form-control" id="prj_urls" rows="5">{{ !'<%= config.urls.join("\\r\\n") %>'}}</textarea>
 	</div>
 
-	<div class="form-group">
+	<div class="form-group browsers-list">
 	{{ !'<% $.each(config.modes.full, function( index, browser ) { %>' }}
 				<label>
 					<input type="checkbox" value="{{ !"<%= browser.unid %>"}}" checked='checked'>{{ !"<%= browser.unid %>" }}

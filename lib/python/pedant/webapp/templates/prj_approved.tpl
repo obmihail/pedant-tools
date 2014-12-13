@@ -21,7 +21,7 @@
 				</td>
 				<td class="screenshot approved">
 					<a class="status-success fancybox" rel="group" href="{{!"<%= item['image'] %>"}}">
-						<img class="lazy" data-original="{{!"<%= item['image'] %>"}}" alt="Approved" />
+						<img class="lazy" data-original="{{!"<%= item['images']['approved'] %>"}}" alt="Approved" />
 					</a>
 				</td>
 				<td class="screenshot approved">
