@@ -1,5 +1,7 @@
-% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
+% include('header.tpl', title='Launch ' + config['prj_name'] )
 <div class="container">
+
+% include('breadcrumbs.tpl', crumbs = [ ( '/','Home'), ('/projects','Projects'), ('/projects/'+config['prj_name'],config['prj_name']),('','Launch') ])
 
 <h3>Launch {{config['prj_name']}}</h3>
 

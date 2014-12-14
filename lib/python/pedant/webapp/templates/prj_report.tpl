@@ -1,9 +1,11 @@
-% include('header.tpl', title='Report:' + timestamp, breadcrumbs = crumbs )
+% include('header.tpl', title='Report: ' + report['pretty'] )
 
 <div class="container">
 
+% include('breadcrumbs.tpl', crumbs = [ ('/','Home'), ('/projects','Projects'), ('/projects/'+project,project), ('/projects/'+project+'/reports','Reports'), ('',report['pretty']) ])
+
 <script type="text/javascript">
-	var items = {{ !report_list }}
+	var items = {{ !report_items }}
 </script>
 <script type="text/template" id="item-row-tpl" charset="UTF-8">
 	{{ !'<% $.each(data, function( index, item ) { %>' }}
@@ -65,8 +67,8 @@
 				<td class="actions">
 					<a class="approve-action pedant-icon {{!"<%= action.class %>"}}" 
 						title="{{!"<%= action.title %>"}}" 
-						data-approve-path="/ajax/projects/{{project}}/approve/{{timestamp}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"
-						data-cancel-approve-path="/ajax/projects/{{ project }}/cancel-approve/{{timestamp}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"></a>
+						data-approve-path="/ajax/projects/{{project}}/approve/{{report['timestamp']}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"
+						data-cancel-approve-path="/ajax/projects/{{ project }}/cancel-approve/{{report['timestamp']}}/{{!"<%= item.item.unid %>"}}/{{!"<%= item.browser.unid %>"}}"></a>
 				</td>
 			</tr>
 		}
@@ -74,7 +76,7 @@
 	{{ !"<% }); %>" }}
 </script>
 
-<h3>Here is a report {{timestamp}}</h3>
+<h3>Report {{report['pretty']}}</h3>
 
 <div>
 	<ul class="list-group">

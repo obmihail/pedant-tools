@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading
+import __init__,os,sys,glob,shutil,zipfile,uuid,json,cgi,fnmatch,threading, datetime
 from bottle import bottle
 from pedant.webapp import *
 from pedant.screenshots import Application as PedantScreens
@@ -43,6 +43,7 @@ def json_data( msg = 'OK' , additional = {} ):
 	answer.update( additional )
 	return answer
 
+
 #pedant static
 @app.route('/assets/<path:path>')
 def callback(path):
@@ -80,10 +81,7 @@ def projects():
 	prj_list = get_project_list()
 	return { 
 		'prj_list': json.dumps( prj_list ), 
-		'search_directory': config['pedant_root'],
-		'crumbs': [ 
-			{'additional_class':'','link':'/','text':'Home'}, 
-			{'additional_class':'active','text':'Projects'} ]
+		'search_directory': config['pedant_root']
 		}
 
 #project main page. static
@@ -101,22 +99,8 @@ def index():
 	return { 
 		'config': prj_config , 
 		'action':'add', 
-		'default_browsers' : {
-			"ANDROID" : { 'unid':"ANDROID_800x600", 'type':"ANDROID", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome android browser", 'desired_capabilities': {'platform': 'ANDROID', 'browserName': 'android', 'version': '', 'javascriptEnabled': True} },
-			"CHROME" : { 'unid':"CHROME_800x600", 'type':"CHROME", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome chrome browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'chrome', 'version': '', 'javascriptEnabled': True} },
-			"FIREFOX" : { 'unid':"FIREFOX_800x600", 'type':"FIREFOX", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome firefox browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'firefox', 'version': '', 'javascriptEnabled': True} },
-			"INTERNETEXPLORER" : { 'unid':"INTERNETEXPLORER_800x600", 'type':"INTERNETEXPLORER", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "IE", 'desired_capabilities': {'platform': 'WINDOWS', 'browserName': 'internet explorer', 'version': '', 'javascriptEnabled': True} },
-			"IPAD" : { 'unid':"IPAD_800x600", 'type':"IPAD", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome ipad browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPad', 'version': '', 'javascriptEnabled': True} },
-			"IPHONE" : { 'unid':"IPHONE_800x600", 'type':"IPHONE", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome iphone browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPhone', 'version': '', 'javascriptEnabled': True} },
-			"OPERA" : { 'unid':"OPERA_800x600", 'type':"OPERA", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome opera browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'opera', 'version': '', 'javascriptEnabled': True} },
-			"PHANTOMJS" : { 'unid':"PHANTOMJS_800x600", 'type':"PHANTOMJS", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome phantom browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'phantomjs', 'version': '', 'javascriptEnabled': True, "phantomjs.page.settings.resourceTimeout": "3000" } },
-			"SAFARI" : { 'unid':"SAFARI_800x600", 'type':"SAFARI", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome safari browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'safari', 'version': '', 'javascriptEnabled': True} }
-		},
-		'config_str':json.dumps( prj_config ) ,
-		'crumbs': [ 
-			{'additional_class':'','link':'/','text':'Home'},
-			{'additional_class':'', 'link':'/projects','text':'Projects'},
-			{'additional_class':'active','text':'New'} ]
+		'default_browsers' : json.dumps( config["selenium"]["default_browsers"] ),
+		'config_str':json.dumps( prj_config )
 		}
 
 #edit project
@@ -140,23 +124,7 @@ def index( project ):
 		'config': prj_config,
 		'action':'update', 
 		'config_str':json.dumps( prj_config ),
-		'default_browsers' : json.dumps( {
-			"ANDROID" : { 'unid':"ANDROID_800x600", 'type':"ANDROID", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome android browser", 'desired_capabilities': {'platform': 'ANDROID', 'browserName': 'android', 'version': '', 'javascriptEnabled': True} },
-			"CHROME" : { 'unid':"CHROME_800x600", 'type':"CHROME", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome chrome browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'chrome', 'version': '', 'javascriptEnabled': True} },
-			"FIREFOX" : { 'unid':"FIREFOX_800x600", 'type':"FIREFOX", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome firefox browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'firefox', 'version': '', 'javascriptEnabled': True} },
-			"INTERNETEXPLORER" : { 'unid':"INTERNETEXPLORER_800x600", 'type':"INTERNETEXPLORER", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "IE", 'desired_capabilities': {'platform': 'WINDOWS', 'browserName': 'internet explorer', 'version': '', 'javascriptEnabled': True} },
-			"IPAD" : { 'unid':"IPAD_800x600", 'type':"IPAD", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome ipad browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPad', 'version': '', 'javascriptEnabled': True} },
-			"IPHONE" : { 'unid':"IPHONE_800x600", 'type':"IPHONE", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome iphone browser", 'desired_capabilities': {'platform': 'MAC', 'browserName': 'iPhone', 'version': '', 'javascriptEnabled': True} },
-			"OPERA" : { 'unid':"OPERA_800x600", 'type':"OPERA", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome opera browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'opera', 'version': '', 'javascriptEnabled': True} },
-			"PHANTOMJS" : { 'unid':"PHANTOMJS_800x600", 'type':"PHANTOMJS", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome phantom browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'phantomjs', 'version': '', 'javascriptEnabled': True, "phantomjs.page.settings.resourceTimeout": "3000" } },
-			"SAFARI" : { 'unid':"SAFARI_800x600", 'type':"SAFARI", 'window_size':[800,600], 'wd_url': "http://127.0.0.1:4444/wd/hub", 'info': "My awesome safari browser", 'desired_capabilities': {'platform': 'ANY', 'browserName': 'safari', 'version': '', 'javascriptEnabled': True} }
-		} ),
-		'crumbs': [ 
-			{'additional_class':'','link':'/','text':'Home'},
-			{'additional_class':'', 'link':'/projects','text':'Projects'},
-			{'additional_class':'','link':'/projects/'+project,'text':project},
-			{'additional_class':'active','text':'Edit'}
-			 	] }
+		'default_browsers' : json.dumps( config['selenium']['default_browsers'] ) }
 
 #launch project page
 @app.route('/projects/<project>/launch')
@@ -175,34 +143,32 @@ def index( project ):
 	return { 
 		'config': prj_config, 
 		'config_str':json.dumps( prj_config ),
-		'crumbs': [ 
-				{'additional_class':'','link':'/','text':'Home'},
-				{'additional_class':'', 'link':'/projects','text':'Projects'},
-				{'additional_class':'','link':'/projects/'+project,'text':project},
-				{'additional_class':'active','text':'Launch'}
-			 	] }
+		 }
 
 #project reports list. reports
 @app.route('/projects/<project>/reports')
 @bottle.view('prj_reports.tpl')
 def index(project):
-	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
+	rep_list = map(
+			lambda x: { 
+					'pretty': datetime.datetime.fromtimestamp( float( os.path.basename( os.path.dirname(x) ) ) ).strftime('%Y-%m-%d %H:%M:%S.%f') ,
+					'timestamp': os.path.basename( os.path.dirname(x) ) }, 
+				glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
 	return { 
 		'project': project, 
-		'reports_list': rep_list,
-		'crumbs': [ 
-				{'additional_class':'','link':'/','text':'Home'},
-				{'additional_class':'', 'link':'/projects','text':'Projects'},
-				{'additional_class':'','link':'/projects/'+project,'text':project},
-				{'additional_class':'active','text':'Reports'}
-			 	] }
+		'reports_list': rep_list
+		}
 
 #project last report
 @app.route('/projects/<project>/reports/last')
 @bottle.view('prj_report.tpl')
 def index(project):
-	rep_list = map(lambda x: os.path.basename( os.path.dirname(x) ), glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep + 'reports' + os.sep + '*' + os.sep ) )
+	rep_list = map(
+			lambda x: { 
+					'pretty': datetime.datetime.fromtimestamp( float( os.path.basename( os.path.dirname(x) ) ) ).strftime('%Y-%m-%d %H:%M:%S.%f') ,
+					'timestamp': os.path.basename( os.path.dirname(x) ) }, 
+				glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
 	rep_list.sort( reverse=True )
 	if len( rep_list ) < 1:
 		bottle.redirect( "/projects/" + project + "/reports")
@@ -210,19 +176,13 @@ def index(project):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , rep_list[0] )
+	app.configure( prj_config , 'full' , rep_list[0]['timestamp'] )
 
 	return { 
 		'project': project, 
-		'timestamp': rep_list[0] , 
-		'report_list': json.dumps( app.get_report() ),
-		'crumbs': [ 
-				{'additional_class':'','link':'/','text':'Home'},
-				{'additional_class':'', 'link':'/projects','text':'Projects'},
-				{'additional_class':'','link':'/projects/'+project,'text':project},
-				{'additional_class':'','link':'/projects/'+project+'/reports','text':'Reports'},
-				{'additional_class':'active','text':'Last report'}
-			 	] }
+		'report': rep_list[0] , 
+		'report_items': json.dumps( app.get_report() )
+		 }
 
 #project report detail
 @app.route('/projects/<project>/reports/<timestamp>')
@@ -233,17 +193,12 @@ def index(project,timestamp):
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
 	app.configure( prj_config , 'full' , timestamp )
+	report = { 'pretty': datetime.datetime.fromtimestamp( float( timestamp ) ).strftime('%Y-%m-%d %H:%M:%S.%f'), 'timestamp' : timestamp }
 	return { 
 		'project': project,
-		'timestamp' :timestamp, 
-		'report_list' : json.dumps( app.get_report() ),
-		'crumbs': [ 
-				{'additional_class':'','link':'/','text':'Home'},
-				{'additional_class':'', 'link':'/projects','text':'Projects'},
-				{'additional_class':'','link':'/projects/'+project,'text':project},
-				{'additional_class':'','link':'/projects/'+project+'/reports','text':'Reports'},
-				{'additional_class':'active','text':timestamp}
-			 	] }
+		'report' : report, 
+		'report_items' : json.dumps( app.get_report() )
+		 }
 
 #project approved images
 @app.route('/projects/<project>/approved')
@@ -256,13 +211,8 @@ def index(project):
 	app.configure( prj_config , 'full' )
 	return { 
 		'project': project, 
-		'items': json.dumps( app.get_approved_images() ),
-		'crumbs': [ 
-				{'additional_class':'','link':'/','text':'Home'},
-				{'additional_class':'', 'link':'/projects','text':'Projects'},
-				{'additional_class':'','link':'/projects/'+project,'text':project},
-				{'additional_class':'active','text':'Approved'}
-			 	] }
+		'items': json.dumps( app.get_approved_images() )
+		 }
 
 #project item timeline
 @app.route('/projects/<project>/timeline/<item>')
@@ -594,4 +544,4 @@ def index(project):
 	return json_error( 'PRJ_ACCESS', project )
 
 pedant_screen_instances = {}
-bottle.run( app=app, host=config['web']['host'], port=config['web']['port'])
+bottle.run( app=app, host=config['web']['host'], port=config['web']['port'], debug=True)

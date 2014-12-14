@@ -1,6 +1,8 @@
-% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
+% include('header.tpl', title='Pedant projects' )
 
 <div class="container">
+
+% include('breadcrumbs.tpl', crumbs = [ ('/','Home'), ('','Projects') ] )
 
 <script type="text/javascript">
 	var projects = {{ !prj_list }}

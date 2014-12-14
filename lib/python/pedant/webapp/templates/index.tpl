@@ -1,4 +1,4 @@
-% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
+% include('header.tpl', title='Pedant main page' )
 
 <div class="container">
 

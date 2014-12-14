@@ -77,7 +77,7 @@ class Application:
 		prj_root = self.config['data_storage_root']
 		if not os.path.isdir( prj_root ):
 			os.makedirs( prj_root )
-		for filename in ( 'pedant.json', 'urls.json', 'PedantHandlers.py' ):
+		for filename in ( 'pedant.json', 'urls.json', 'PedantHooks.py' ):
 			if os.path.isfile( source_dir + os.sep + filename ):
 				if ( os.path.isfile( prj_root + os.sep + filename ) ):
 					os.remove( prj_root + os.sep + filename )

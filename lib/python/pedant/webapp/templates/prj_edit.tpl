@@ -1,5 +1,7 @@
-% include('header.tpl', title='Pedant main page', breadcrumbs = crumbs )
+% include('header.tpl', title='Edit project' )
 <div class="container">
+
+% include('breadcrumbs.tpl', crumbs = [ ('/','Home'), ('/projects','Projects'), ('/projects/'+config['prj_name'],config['prj_name']), ('','Edit') ])
 
 % if action == 'add':
 <h3>New project:</h3>
