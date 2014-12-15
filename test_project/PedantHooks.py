@@ -1,8 +1,5 @@
-# import sys
-# sys.path.insert(0, '/home/mihailob/projects/pedant-tools/lib/python/pedant/screenshots/' )
 from PedantStandartHooks import PedantHooks
 from PedantStandartHooks import hook
-
 
 class Hooks(PedantHooks):
 
@@ -18,11 +15,11 @@ class Hooks(PedantHooks):
 	self.wait_js( "return document.readyState != 'complete'", 5000 ) - wait js condition 5000 miliseconds
 
 	HOOKS
-	@hook( 'before_items' ) - function run before start items iterating. If you raise exception - pedant skip all items and mark report as failed
-	@hook( 'before_item' ) - function run before url opening in browser. If you raise exception - pedant skip current item
-	@hook( 'before_screenshot' ) - function run after url opening in browser and before screenshot capture. If you raise exception - pedant skip current item
-	@hook( 'after_item' ) - function run after screenshot checking and before report save. If you raise exception - pedant do nothind
-	@hook( 'after_items' ) - function run after all items iterate. If you raise exception - pedant do nothing
+	@hook( 'before_items' ) - run before start items iterating. If you raise exception - pedant skip all items and mark report as failed
+	@hook( 'before_item' ) - run before url opening in browser. If you raise exception - pedant skip current item
+	@hook( 'before_screenshot' ) - run after url opening in browser and before screenshot capture. If you raise exception - pedant skip current item
+	@hook( 'after_item' ) - run after screenshot checking and before report save. If you raise exception - pedant do nothind
+	@hook( 'after_items' ) - run after all items iterate. If you raise exception - pedant do nothing
 	"""
 
 
@@ -35,8 +32,8 @@ class Hooks(PedantHooks):
 
 	@hook( 'before_item' )
 	def before_item(self, item ):
-		#example: self.wait_js( "return document.readyState != 'complete'", 5000 )
-		#example: self.log( 'Log message before item ' + item['unid'] )
+		#self.wait_js( "return document.readyState != 'complete'", 5000 )
+		#self.log( 'Log message before item ' + item['unid'] )
 		pass
 
 
