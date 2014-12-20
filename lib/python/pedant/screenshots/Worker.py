@@ -88,7 +88,8 @@ class Worker(threading.Thread):
 		#start browser
 		self.initBrowser()
 		self.init_hook()
-		self.hook.call_by_event( 'before_items',self.items )
+		if self.hook.call_by_event( 'before_items',self.items ) is False:
+			self.stop = True
 		for item in self.items:
 			if ( self.stop ):
 				self.log( "Skip url: " + item['url'] )
@@ -96,16 +97,19 @@ class Worker(threading.Thread):
 			self.log( "Files for left (for current worker): " + str( ( len(self.items) - len(self.finished_ids) ) ) )
 			self.log( "Start checking for url: " + item['url'] )
 			start_time = time.time()
-			self.hook.call_by_event( 'before_item', item )
+			if self.hook.call_by_event( 'before_item', item ) is False:
+				continue
 			self.browser['instance'].get( item['url'] )
 			item['load_time'] = round( time.time() - start_time , 2)
 			#handler before screen
-			self.hook.call_by_event( 'before_screenshot', item )
+			if self.hook.call_by_event( 'before_screenshot', item ) is False:
+				continue
 			#print "Handler <before_screenshot> error with item <" +item['unid']+ ">"
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 			try:
 				result = self.screen_processing( item )
-				self.hook.call_by_event( 'after_item', item , result )
+				if self.hook.call_by_event( 'after_item', item , result ) is False:
+					continue 
 				self.save_result( item , result )
 			except Exception as e:
 				print "Item <" + item['unid'] + "> error:" + str(e)

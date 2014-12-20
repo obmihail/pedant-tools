@@ -28,8 +28,7 @@ class PedantHooks:
 				func( *kwargs[1:] )
 			except Exception as e:
 				res = False
-				self.log( 'Pedant handler exception in method ' + func.__name__ + ' with arguments: ' + str(kwargs[1:]) + '. Exception: ' + str(e), level="ERROR" )
-				print func.__name__ + '- ' + str(res)
+				self.log( 'Pedant handler exception in method %s with arguments: %s . Exception: %s ' % ( func.__name__ , str(kwargs[1:]) , str(e) ), level="ERROR" )
 		return res
 
 	"""

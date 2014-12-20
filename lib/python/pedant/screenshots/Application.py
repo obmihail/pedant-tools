@@ -25,12 +25,12 @@ class Application:
 		
 		if ( config.has_key('logging') and config['logging'] is True ):
 			#filepath
-			self.log_file = config['data_storage_root'] + os.sep + 'logs' + os.sep + str( self.timestamp ) + '.log'
+			self.log_file = os.path.join( config['data_storage_root'] , 'logs' , '%s.log' % str( self.timestamp ) )
 			#create dir
 			os.makedirs( os.path.dirname( self.log_file ) ) if not os.path.isdir( os.path.dirname( self.log_file ) ) else None
 
 		self.config = config
-		self.lock_file_path = config['data_storage_root'] + os.sep + 'lock.file'
+		self.lock_file_path = os.path.join( config['data_storage_root'] , 'lock.file' )
 		browsers = self.reconfigureBrowsers( config['modes'][ mode ] )
 		self.items = config['urls']
 		
@@ -91,7 +91,7 @@ class Application:
 		for browser in browsers:
 			#unid generation
 			if setted.has_key( browser[ 'unid' ] ):
-				print '>Warn pedant find duplicate browser unid in current configuration. Use last browser: ' + unid
+				print '>Warn pedant find duplicate browser unid in current configuration. Use last browser: %s ' % unid
 			if not browser.has_key( 'info' ):
 				browser['info'] = 'no info'
 			setted[ browser[ 'unid' ] ] = browser
@@ -114,16 +114,16 @@ class Application:
 
 	#get list for sources needle scanning
 	def find_sources_in_directory( self, search_directory, file_types = ('*.html','*.htm'), mask = '' , prj_name = '' ):
-		local_src_list = search_directory + os.sep + 'urls.json'
+		local_sources_path = os.path.join( search_directory , 'urls.json' )
 		sources = []
 		#get all sources from file urls.json
-		if os.path.isfile(local_src_list):
-			loc_sources = json.load( open( local_src_list ) )
+		if os.path.isfile(local_sources_path):
+			loc_sources = json.load( open( local_sources_path ) )
 			sources += self.make_urls_from_list( loc_sources )
 		#find all static files in current directory
 		files = []
 		for file_type in file_types:
-			files.extend( glob.glob( search_directory + os.sep + file_type) )
+			files.extend( glob.glob( os.path.join( search_directory , file_type )) )
 
 		for item in files:
 			item_name = os.path.basename(item)
@@ -139,7 +139,7 @@ class Application:
 
 	#get config for project from path
 	def get_project_config( self, directory ):
-		local_conf_file =  directory + os.sep + "pedant.json"
+		local_conf_path =  os.path.join( directory,  "pedant.json" )
 		local_config = {}
 		#read global config
 		
@@ -147,9 +147,9 @@ class Application:
 		config['urls'] = []
 		config['modes'] = {}
 		#read local config
-		if os.path.isfile( local_conf_file ):
+		if os.path.isfile( local_conf_path ):
 			try:
-				local_config = json.load( open( local_conf_file ) )
+				local_config = json.load( open( local_conf_path ) )
 			except:
 				return {}
 		#config = dict( config.items() + local_config.items() )
@@ -167,21 +167,21 @@ class Application:
 
 	def save_project_config(self, prj_dir, config):
 		if not config.has_key('without_urls'):
-			urls_file = prj_dir + os.sep + 'urls.json'
+			urls_file_path = os.path.join( prj_dir , 'urls.json' )
 			urls = config['urls']
 			del config['urls']
 			#save urls to root dir/urls.json
-			obj = open( urls_file , 'wb')
-			json.dump( urls, obj )
-			obj.close
+			urls_file_o = open( urls_file_path , 'wb')
+			json.dump( urls, urls_file_o )
+			urls_file_o.close
 		else:
 			del config['without_urls']
 		
-		config_file = prj_dir + os.sep + 'pedant.json'
+		config_file_path = os.path.join( prj_dir , 'pedant.json' )
 		#save config to root dir/pedant.json
-		obj = open( config_file , 'wb')
-		json.dump( config, obj )
-		obj.close
+		config_file_o = open( config_file_path , 'wb')
+		json.dump( config, config_file_o )
+		config_file_o.close
 
 		return config
 
@@ -276,7 +276,8 @@ class Application:
 		
 		#check max workers
 		max_workers = int(config['max_workers'])
-		if ( max_workers < 1 or max_workers > 39 ):
+		#TODO: get max value for max_workers from pedant config 
+		if ( max_workers < 1 or max_workers > 50 ):
 			config['error'] += ' Max workers count: ' + config['max_workers'] + ' is invalid (must be > 0 and < 40 )'
 
 		if( len( config['error'] ) < 1 ):
@@ -284,7 +285,7 @@ class Application:
 		return config
 
 	def get_default_config(self):
-		return json.load( open( os.path.dirname(os.path.realpath(__file__)) + os.sep + "default.conf.json" ) )
+		return json.load( open( os.path.join( os.path.dirname(os.path.realpath(__file__)) , "default.conf.json" ) ) )
 
 	def calculate_workers_by_items(self,items):
 		#normal items count for one worker.
@@ -309,8 +310,8 @@ class Application:
 	"""
 	def start(self):
 
-		self.log( " --- Pedant started at " + str ( datetime.datetime.fromtimestamp( self.timestamp ).strftime('%d-%m-%Y %H:%M:%S') ) )
-		print "Pedant started at " + str ( datetime.datetime.fromtimestamp( self.timestamp ).strftime('%d-%m-%Y %H:%M:%S') )
+		self.log( " --- Pedant started at %s " % str ( datetime.datetime.fromtimestamp( self.timestamp ).strftime('%d-%m-%Y %H:%M:%S') ) )
+		print "Pedant started at %s " % str ( datetime.datetime.fromtimestamp( self.timestamp ).strftime('%d-%m-%Y %H:%M:%S') )
 		#start all workers
 		for worker_inst in self.workers:
 			worker_inst.start()
@@ -321,7 +322,7 @@ class Application:
 		#wait all workers are finished
 		while( self.runned ):
 			#write status
-			self.print_progress( str( len(finished) ) + ' / ' + str( self.total_count ) + ' finished | Active workers: ' + str(len( self.workers)) )
+			self.print_progress(  '%s / %s finished | Active workers:  %s ' % ( str( len(finished) ) , str( self.total_count ), str(len( self.workers)) ) )
 			#check all workers
 			log = ''
 			for worker_inst in self.workers:
@@ -337,8 +338,8 @@ class Application:
 			# if workers count < 1 then finish
 			if len( self.workers ) < 1:
 				print
-				self.log( " --- Pedant finished at " + str ( datetime.datetime.fromtimestamp( time.time() ).strftime('%d-%m-%Y %H:%M:%S') ) )
-				print "Pedant finished at " + str ( datetime.datetime.fromtimestamp( time.time() ).strftime('%d-%m-%Y %H:%M:%S') )
+				self.log( " --- Pedant finished at %s " % str ( datetime.datetime.fromtimestamp( time.time() ).strftime('%d-%m-%Y %H:%M:%S') ) )
+				print "Pedant finished at %s" % str ( datetime.datetime.fromtimestamp( time.time() ).strftime('%d-%m-%Y %H:%M:%S') )
 				self.runned = False
 				self.stop()
 				return True

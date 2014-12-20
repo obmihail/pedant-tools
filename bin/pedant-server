@@ -47,13 +47,13 @@ def json_data( msg = 'OK' , additional = {} ):
 #pedant static
 @app.route('/assets/<path:path>')
 def callback(path):
-    return bottle.static_file(path,templates_dir + os.sep + 'assets')
+    return bottle.static_file(path, os.path.join( templates_dir , 'assets' ) )
 
 #pedant report images
 @app.route('/projects/<project>/static/<path:path>')
 def callback(project,path):
 	#print config['data_storage_root']+os.sep+project + path 
-	return bottle.static_file(path,config['data_storage_root']+os.sep+project)
+	return bottle.static_file(path, os.path.join( config['data_storage_root'] , project ) )
 
 #coming soon page
 @app.route('/coming_soon')
@@ -64,7 +64,7 @@ def index():
 def get_project_list():
 	return map(lambda name: { 
 		'name': os.path.basename( os.path.dirname(name) ), 
-		'edit': os.path.isfile( name + os.sep + 'pedant.json' ) 
+		'edit': os.path.isfile( os.path.join( name , 'pedant.json') ) 
 		},
 		glob.glob( config['data_storage_root'] + os.sep + '*' + os.sep ) )
 
@@ -108,13 +108,13 @@ def index():
 @bottle.view('prj_edit.tpl')
 def index( project ):
 	#read config from json file
-	prj_dir = config['data_storage_root'] + os.sep + project
+	prj_dir = os.path.join( config['data_storage_root'] , project )
 	app = PedantScreens.Application()
 	if ( os.path.isdir(prj_dir) ):
 		prj_config = app.get_project_config( prj_dir )
 	else:
 		bottle.redirect( "/" )
-	urls_file = config['data_storage_root'] + os.sep + project + os.sep + 'urls.json'
+	urls_file = os.path.join( config['data_storage_root'] , project , 'urls.json' )
 	if os.path.isfile( urls_file ):
 		prj_config['urls'] = json.load( open( urls_file ) )
 	else:
@@ -132,10 +132,10 @@ def index( project ):
 def index( project ):
 	#read config from json file
 	app = PedantScreens.Application()
-	prj_dir = config['data_storage_root'] + os.sep + project
+	prj_dir = os.path.join( config['data_storage_root'] , project )
 	if ( os.path.isdir(prj_dir) ):
 		prj_config = app.get_project_config( prj_dir )
-	urls_file = config['data_storage_root'] + os.sep + project + os.sep + 'urls.json' 
+	urls_file = os.path.join( config['data_storage_root'] , project , 'urls.json' ) 
 	if os.path.isfile( urls_file ):
 		prj_config['urls'] = json.load( open( urls_file ) )
 	else:
@@ -153,7 +153,7 @@ def index(project):
 			lambda x: { 
 					'pretty': datetime.datetime.fromtimestamp( float( os.path.basename( os.path.dirname(x) ) ) ).strftime('%Y-%m-%d %H:%M:%S.%f') ,
 					'timestamp': os.path.basename( os.path.dirname(x) ) }, 
-				glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
+				glob.glob( os.path.join( config['data_storage_root'] , project , 'reports' , '*' ) + os.sep ) )
 	rep_list.sort( reverse=True )
 	return { 
 		'project': project, 
@@ -168,14 +168,14 @@ def index(project):
 			lambda x: { 
 					'pretty': datetime.datetime.fromtimestamp( float( os.path.basename( os.path.dirname(x) ) ) ).strftime('%Y-%m-%d %H:%M:%S.%f') ,
 					'timestamp': os.path.basename( os.path.dirname(x) ) }, 
-				glob.glob( config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + '*' + os.sep ) )
+				glob.glob( os.path.join( config['data_storage_root'] , project , 'reports' , '*' ) + os.sep ) )
 	rep_list.sort( reverse=True )
 	if len( rep_list ) < 1:
 		bottle.redirect( "/projects/" + project + "/reports")
 	pathes = generate_pathes( config['data_storage_root'], project )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = os.path.join( config['data_storage_root'] , project )
 	app.configure( prj_config , '*' , rep_list[0]['timestamp'] )
 
 	return { 
@@ -191,7 +191,7 @@ def index(project,timestamp):
 	pathes = generate_pathes( config['data_storage_root'], project )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = os.path.join( config['data_storage_root'] , project )
 	app.configure( prj_config , '*' , timestamp )
 	report = { 'pretty': datetime.datetime.fromtimestamp( float( timestamp ) ).strftime('%Y-%m-%d %H:%M:%S.%f'), 'timestamp' : timestamp }
 	return { 
@@ -207,7 +207,7 @@ def index(project):
 	pathes = generate_pathes( config['data_storage_root'], project )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = os.path.join( config['data_storage_root'] , project )
 	app.configure( prj_config , '*' )
 	return { 
 		'project': project, 
@@ -226,7 +226,7 @@ def approve(project,timestamp,item,browser):
 	pathes = generate_pathes( config['data_storage_root'], project, timestamp, item, browser )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project.encode('utf-8')
+	prj_config['data_storage_root'] = os.path.join( config['data_storage_root'] , project.encode('utf-8') )
 	app.configure( prj_config , '*' , timestamp )
 
 	if app.access() and os.path.isfile( pathes['report_json'] ):
@@ -287,10 +287,10 @@ def index(project,timestamp):
 	pathes = generate_pathes( config['data_storage_root'], project, timestamp )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = os.path.join( config['data_storage_root'] , project )
 	app.configure( prj_config , '*' , timestamp )
 	if app.access():
-		path = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep
+		path = os.path.join( config['data_storage_root'] , project , 'reports' , timestamp )
 		if os.path.isdir( path ):
 			shutil.rmtree( path )
 			return json_data( 'Removed' )
@@ -308,11 +308,11 @@ def ajax():
 		return {'status':'ERROR', 'msg': prj_config['error'] }
 	if prj_config.has_key( 'oldName' ):
 		del prj_config['oldName']
-	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
-	config_file = prj_root_dir + os.sep + 'pedant.json'
+	prj_root_dir = os.path.join( config['data_storage_root'] , prj_config['prj_name'] )
+	config_file = os.path.join( prj_root_dir , 'pedant.json' )
 	#check root dir not exists
 	if os.path.isdir(prj_root_dir):
-		return json_error( 'DEFAULT', 'Project directory with this name already exists ('+prj_root_dir+'). Remove it for continue' )
+		return json_error( 'DEFAULT', 'Project directory with this name (%s) already exists . Remove it for continue' % prj_root_dir )
 	#create project root dir
 	if os.makedirs(prj_root_dir) is False:
 		return json_error('PATH_PERMISSION', prj_root_dir )
@@ -344,11 +344,11 @@ def ajax():
 
 	#rename existing project
 	if prj_config.has_key( 'oldName' ):
-		old_root_dir = config['data_storage_root'] + os.sep + prj_config['oldName'].encode("utf8")
+		old_root_dir = os.path.join( config['data_storage_root'] , prj_config['oldName'].encode("utf8") )
 		# check dir is writeable
 		#rename folder
 		if os.path.isdir(prj_root_dir):
-			return json_error( 'DEFAULT', 'Project directory with name  ('+prj_root_dir+') already exists. Type another name' )
+			return json_error( 'DEFAULT', 'Project directory with name (%s) already exists.' % prj_root_dir )
 		os.rename( old_root_dir , prj_root_dir )
 		#change name in config
 		del prj_config['oldName']
@@ -378,7 +378,7 @@ def index( name ):
 			#read config from file
 			prj_config = app.get_project_config( prj_dir )
 			# get urls from file
-			urls_file = os.path.join(config['data_storage_root'], prj_config['prj_name'] , 'urls.json')
+			urls_file = os.path.join(config['data_storage_root'], prj_config['prj_name'].encode('utf-8') , 'urls.json')
 			if os.path.isfile(urls_file):
 				prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
 			else:
