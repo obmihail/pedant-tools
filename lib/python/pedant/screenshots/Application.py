@@ -207,7 +207,7 @@ class Application:
 		if os.path.isfile( self.lock_file_path ):
 			os.remove( self.lock_file_path )
 
-	def check_config( self, config, ignore_urls = False ):
+	def check_config( self, config, ignore_urls = False, ignore_normalizied_prj_name=False ):
 
 		#check modes section exists
 		config['error'] = ''
@@ -265,8 +265,12 @@ class Application:
 		
 		#check project name
 		normalized_name = re.sub('[^0-9a-zA-Z_]+', '_', config['prj_name'])
-		if ( len(normalized_name) < 1 or normalized_name != config['prj_name'] ):
+		if ( len(normalized_name) < 1 ):
 			config['error'] += ' Project name ' + config['prj_name'] + ' is invalid'
+		#
+		if ( not ignore_normalizied_prj_name and normalized_name != config['prj_name'] ):
+			config['error'] += ' Project name ' + normalized_name + ' is not equal old prj_name'
+
 		config['prj_name'] = normalized_name
 		
 		#check max workers
@@ -484,7 +488,7 @@ def generate_pathes( ds_root, prj_name, timestamp = '', item = '', browser = '' 
 		'actual_image_web': '/projects/%s/static/reports/%s/%s/%s/actual.png' % ( prj_name, timestamp, item, browser ),
 		'diff_image': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'diff.png') % ( prj_name, timestamp, item, browser ) ),
 		'diff_image_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'diff.png.bckp') % ( prj_name, timestamp, item, browser ) ),
-		'diff_image_web': '/projects/%s/static/reports/%s/%s/%s/actual.png' % ( prj_name , timestamp, item, browser ),
+		'diff_image_web': '/projects/%s/static/reports/%s/%s/%s/diff.png' % ( prj_name , timestamp, item, browser ),
 		'report_json': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'report.json') % ( prj_name, timestamp, item, browser ) ),
 		'report_json_bckp': os.path.realpath( (ds_root + os.sep + '%s' + os.sep + 'reports' + os.sep + '%s' + os.sep + '%s' + os.sep + '%s' +  os.sep + 'report.json.bckp') % ( prj_name, timestamp, item, browser ) )
 	}

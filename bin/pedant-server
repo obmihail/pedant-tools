@@ -303,8 +303,8 @@ def index(project,timestamp):
 def ajax():
 	json_post = json.load(bottle.request.body)
 	app = PedantScreens.Application()
-	prj_config = app.check_config( json_post )
-	if (  prj_config.has_key( 'error' ) ):
+	prj_config = app.check_config( json_post, ignore_normalizied_prj_name=True )
+	if ( prj_config.has_key( 'error' ) ):
 		return {'status':'ERROR', 'msg': prj_config['error'] }
 	if prj_config.has_key( 'oldName' ):
 		del prj_config['oldName']
@@ -337,7 +337,7 @@ def ajax( prj_name ):
 def ajax():
 	json_post = json.load(bottle.request.body)
 	app = PedantScreens.Application()
-	prj_config = app.check_config( json_post )
+	prj_config = app.check_config( json_post, ignore_normalizied_prj_name=True )
 	if (  prj_config.has_key( 'error' ) ):
 		return json_error( 'DEFAULT', prj_config['error'] )
 
@@ -456,8 +456,6 @@ def index():
 			urls_link = project_path + os.sep + 'urls.json'
 			#remove existing links for this project
 			if ( os.path.isdir( project_path ) ):
-				print config_link
-				print file
 				if ( os.path.isfile( config_link ) ):
 					print config_link
 					os.remove( config_link )
