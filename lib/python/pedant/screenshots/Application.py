@@ -71,7 +71,7 @@ class Application:
 			csl.restype = ctypes.c_ubyte
 			flags = 1 if os.path.isdir(source) else 0
 			if csl(link_name, source, flags) == 0:
-				raise ctypes.WinError( descr='Symlink not created. For this feature, you need run pedant-server.bat as admin user' )
+				raise ctypes.WinError( descr='Sorry. Symlink not created. You can find solution in project wiki on github.' )
 
 	def create_symlinks( self, source_dir ):
 		prj_root = self.config['data_storage_root']
