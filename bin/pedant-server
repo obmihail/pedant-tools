@@ -226,7 +226,7 @@ def approve(project,timestamp,item,browser):
 	pathes = generate_pathes( config['data_storage_root'], project, timestamp, item, browser )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project.encode('utf-8')
 	app.configure( prj_config , '*' , timestamp )
 
 	if app.access() and os.path.isfile( pathes['report_json'] ):
@@ -249,7 +249,7 @@ def cancel_approve(project,timestamp,item,browser):
 	pathes = generate_pathes( config['data_storage_root'], project, timestamp, item, browser )
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
-	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
+	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project.encode('utf-8')
 	app.configure( prj_config , '*' , timestamp )
 
 	if app.access() and os.path.isfile( pathes['report_json_bckp'] ):
@@ -340,12 +340,11 @@ def ajax():
 	prj_config = app.check_config( json_post, ignore_normalizied_prj_name=True )
 	if (  prj_config.has_key( 'error' ) ):
 		return json_error( 'DEFAULT', prj_config['error'] )
-
 	prj_root_dir = config['data_storage_root'] + os.sep + prj_config['prj_name']
 
 	#rename existing project
 	if prj_config.has_key( 'oldName' ):
-		old_root_dir = config['data_storage_root'] + os.sep + prj_config['oldName']
+		old_root_dir = config['data_storage_root'] + os.sep + prj_config['oldName'].encode("utf8")
 		# check dir is writeable
 		#rename folder
 		if os.path.isdir(prj_root_dir):
@@ -379,7 +378,7 @@ def index( name ):
 			#read config from file
 			prj_config = app.get_project_config( prj_dir )
 			# get urls from file
-			urls_file = config['data_storage_root'] + os.sep + prj_config['prj_name'] + os.sep + 'urls.json'
+			urls_file = os.path.join(config['data_storage_root'], prj_config['prj_name'] , 'urls.json')
 			if os.path.isfile(urls_file):
 				prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
 			else:
@@ -447,7 +446,8 @@ def index():
 			if ( detected_config.has_key('error') ):
 				messages.append( 'Project config ' + file + ' was skipped: ' + detected_config['error'] )
 				continue
-			project_dir = config['data_storage_root'] + os.sep + detected_config['prj_name']
+
+			project_dir = config['data_storage_root'] + os.sep + detected_config['prj_name'].encode('utf-8')
 			#
 			candidate_dir = os.path.dirname( file )
 			prj_name = detected_config['prj_name']
@@ -474,7 +474,7 @@ def recursive_projects_search( dirname ):
 	matches = []
 	for root, dirnames, filenames in os.walk( dirname ):
 		for filename in fnmatch.filter(filenames, 'pedant.json'):
-			if not root.startswith( config[ 'data_storage_root' ] ):
+			if not root.encode('utf-8').startswith( config[ 'data_storage_root' ] ):
 				matches.append( os.path.join(root, filename) )
 	return matches
 

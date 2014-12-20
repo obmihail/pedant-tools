@@ -15,7 +15,7 @@ parser.add_argument( "-log", "--logging", type=bool , help="Need write log?", de
 args = parser.parse_args()
 
 app = Application()
-config = app.check_config( app.get_project_config( os.getcwd() ), ignore_urls=True )
+config = app.check_config( app.get_project_config( os.getcwd() ), ignore_urls=True, ignore_normalizied_prj_name=True )
 
 if config.has_key('error'):
 	print "Your config is broken. Errors:"

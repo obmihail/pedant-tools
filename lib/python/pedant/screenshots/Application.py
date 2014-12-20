@@ -270,9 +270,9 @@ class Application:
 			config['error'] += ' Project name ' + config['prj_name'] + ' is invalid'
 		#
 		if ( not ignore_normalizied_prj_name and normalized_name != config['prj_name'] ):
-			config['error'] += ' Project name ' + normalized_name + ' is not equal old prj_name'
+			config['error'] += ' Project name ' + normalized_name + ' is not equal old prj_name:' + config['prj_name']
 
-		config['prj_name'] = normalized_name
+		config['prj_name'] = normalized_name.encode("utf8")
 		
 		#check max workers
 		max_workers = int(config['max_workers'])
@@ -438,7 +438,7 @@ class Application:
 
 	def get_report(self):
 		data = list()
-		print glob.glob( self.config['data_storage_root'] + os.sep + 'reports' + os.sep + self.timestamp + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' )
+		#print glob.glob( self.config['data_storage_root'] + os.sep + 'reports' + os.sep + self.timestamp + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' )
 		for json_path in glob.glob( self.config['data_storage_root'] + os.sep + 'reports' + os.sep + self.timestamp + os.sep + '*' + os.sep + '*' + os.sep + 'report.json' ):
 			json_content=open(json_path)
 			json_report = json.load(json_content)
@@ -472,6 +472,10 @@ class Application:
 
 #get pathes for items
 def generate_pathes( ds_root, prj_name, timestamp = '', item = '', browser = '' ):
+	prj_name = prj_name.encode('utf-8')
+	item = item.encode('utf-8')
+	browser = browser.encode('utf-8')
+	timestamp = timestamp.encode('utf-8')
 	pathes = {
 		'prj_root': os.path.realpath( (ds_root + os.sep + '%s') % (prj_name) ),
 		#approved images

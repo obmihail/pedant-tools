@@ -127,14 +127,15 @@ class Worker(threading.Thread):
 		pathes = {}
 		for item in self.items:
 			path_suffix = item['unid'] + os.sep + self.browser['unid'] + os.sep
+			path_suffix = path_suffix.encode('utf-8')
 			pathes[ item['unid'] ] = {
 				'abs': {
-					'approved_dir': self.root + os.sep + 'approved' + os.sep + path_suffix,
-					'report_dir': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix,
-					'approved_path': self.root + os.sep + 'approved' + os.sep + path_suffix + 'approved.png',
-					'actual_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'actual.png',
-					'approved_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'approved_report.png',
-					'diff_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'diff.png', 
+					'approved_dir':	os.path.join( self.root, 'approved' , path_suffix),
+					'report_dir': os.path.join( self.root, 'reports' , self.timestamp, path_suffix),
+					'approved_path': os.path.join( self.root, 'approved' , path_suffix , 'approved.png' ),
+					'actual_report_path': os.path.join( self.root , 'reports' , self.timestamp , path_suffix + 'actual.png' ),
+					'approved_report_path': os.path.join( self.root , 'reports' , self.timestamp , path_suffix , 'approved_report.png' ),
+					'diff_report_path': os.path.join( self.root , 'reports' , self.timestamp , path_suffix , 'diff.png' )
 				}
 			}
 		return pathes
