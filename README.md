@@ -23,7 +23,7 @@ Easy install
 
 ==========
 
-1. Download repository as zip and unpack
+1. Download [pedant-portable] (https://github.com/obmihail/pedant-tools/tree/pedant-portable) branch as zip and unpack. [Link to zip] (https://github.com/obmihail/pedant-tools/archive/pedant-portable.zip)
 2. In linux: 'chmod +x pedant-tools/bin/pedant-server' and run it: './pedant-tools/bin/pedant-server'
 3. In windows - run /pedant-tools/bin/pedant-server.bat file
 4. Open http://localhost:8081/ in your favorite browser
