@@ -11,7 +11,7 @@
 <script type="text/template" id="project-row-tpl" charset="UTF-8">
 	{{!"<% if (data.length > 0) { %>"}}
 		{{ !'<% $.each( data, function( index, project ) { %>' }}
-			<tr>
+			<tr class='item project-item'>
 				<td>
 				<a href="/projects/{{!"<%= project['name'] %>"}}"> {{!"<%= project['name'] %>"}} 
 				</td>
