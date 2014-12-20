@@ -19,7 +19,7 @@
 					<a href="/projects/{{project}}/reports/{{report['timestamp']}}"> {{report['pretty']}} </a>
 				</td>
 				<td>
-					<a href="javascript:remove_approved_item(this);" class="pedant-icon delete-item delete-report" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report}}"></a>
+					<a href="javascript:remove_approved_item(this);" class="pedant-icon delete-item delete-report" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report['timestamp']}}"></a>
 				</td>
 			</tr>
 		% end

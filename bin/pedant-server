@@ -176,7 +176,7 @@ def index(project):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , rep_list[0]['timestamp'] )
+	app.configure( prj_config , '*' , rep_list[0]['timestamp'] )
 
 	return { 
 		'project': project, 
@@ -192,7 +192,7 @@ def index(project,timestamp):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , timestamp )
+	app.configure( prj_config , '*' , timestamp )
 	report = { 'pretty': datetime.datetime.fromtimestamp( float( timestamp ) ).strftime('%Y-%m-%d %H:%M:%S.%f'), 'timestamp' : timestamp }
 	return { 
 		'project': project,
@@ -208,7 +208,7 @@ def index(project):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' )
+	app.configure( prj_config , '*' )
 	return { 
 		'project': project, 
 		'items': json.dumps( app.get_approved_images() )
@@ -227,7 +227,7 @@ def approve(project,timestamp,item,browser):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , timestamp )
+	app.configure( prj_config , '*' , timestamp )
 
 	if app.access() and os.path.isfile( pathes['report_json'] ):
 		return json_data( '' , app.approve_image( item, browser ) )
@@ -250,7 +250,7 @@ def cancel_approve(project,timestamp,item,browser):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , timestamp )
+	app.configure( prj_config , '*' , timestamp )
 
 	if app.access() and os.path.isfile( pathes['report_json_bckp'] ):
 		return json_data( '', app.cancel_approve_image( item, browser ) )
@@ -288,7 +288,7 @@ def index(project,timestamp):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , timestamp )
+	app.configure( prj_config , '*' , timestamp )
 	if app.access():
 		path = config['data_storage_root'] + os.sep + project + os.sep + 'reports' + os.sep + timestamp + os.sep
 		if os.path.isdir( path ):
@@ -511,7 +511,7 @@ def index(project):
 	app = PedantScreens.Application()
 	prj_config = app.get_project_config( pathes['prj_root'] )
 	prj_config['data_storage_root'] = config['data_storage_root'] + os.sep + project
-	app.configure( prj_config , 'full' , '' )
+	app.configure( prj_config , '*' , '' )
 
 	if app.access():
 		upload = bottle.request.files.get('upload') 

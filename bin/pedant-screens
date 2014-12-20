@@ -10,14 +10,15 @@ from pedant.screenshots.Application import Application
 
 #parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument( "-m", "--mode", type=str , help="Pedant working mode from config", default='full')
+parser.add_argument( "-m", "--mode", type=str , help="Pedant working mode from config", default='*')
 parser.add_argument( "-log", "--logging", type=bool , help="Need write log?", default=False)
 args = parser.parse_args()
 
 app = Application()
 config = app.check_config( app.get_project_config( os.getcwd() ), ignore_urls=True )
+
 if config.has_key('error'):
-	print "You config is broken :( Errors:"
+	print "Your config is broken. Errors:"
 	print config['error']
 	print "Current config is: "
 	print config

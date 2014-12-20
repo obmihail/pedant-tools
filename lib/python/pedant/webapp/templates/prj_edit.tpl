@@ -41,7 +41,7 @@
           <td>{{ !"<%= name %>" }}</td>
           <td>{{ !"<%= JSON.stringify(browsers) %>" }}</td>
           <td>
-          	{{ !"<% if ( name.toLowerCase() !== 'full' ) { %>"}}
+          	{{ !"<% if ( name.toLowerCase() !== '*' ) { %>"}}
           	<a class="edit-mode" data-toggle="modal" data-target="#editLMModal" data-mode="edit" data-unid="{{ !"<%= name %>" }}">Edit</a> 
           	<a class="delete-mode" data-toggle="modal" data-target="#deleteLMModal" data-mode="delete" data-unid="{{ !"<%= name %>" }}">Del</a>
           	{{ !"<% } %>"}}
@@ -52,7 +52,7 @@
 
 <!-- TODO: refactor it -->
 <script type="text/template" id="browsers-for-mode-checkboxes-tpl" charset="UTF-8">
-	{{ !'<% $.each(config.modes.full, function( index, browser ) { %>' }}
+	{{ !'<% $.each(config.modes[\'*\'], function( index, browser ) { %>' }}
 		<label>
 			<input type="checkbox" value="{{ !"<%= browser.unid %>"}}" 
 			{{ !"<% if ( data.browsers.indexOf( browser.unid ) > -1 ) { %><%= checked='checked' %><% } %>"}} >{{ !"<%= browser.unid %>" }}</label>

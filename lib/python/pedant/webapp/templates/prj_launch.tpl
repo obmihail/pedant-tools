@@ -42,7 +42,7 @@
 	</div>
 
 	<div class="form-group browsers-list">
-	{{ !'<% $.each(config.modes.full, function( index, browser ) { %>' }}
+	{{ !'<% $.each(config.modes[\'*\'], function( index, browser ) { %>' }}
 				<label>
 					<input type="checkbox" value="{{ !"<%= browser.unid %>"}}" checked='checked'>{{ !"<%= browser.unid %>" }}
 					<a class="edit-browser" data-toggle="modal" data-target="#editBrowserModal" data-mode="edit" data-unid="{{!"<%= browser.unid %>"}}">[[Edit]]</a> 

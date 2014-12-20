@@ -145,6 +145,7 @@ class Application:
 		
 		config = self.get_default_config()
 		config['urls'] = []
+		config['modes'] = {}
 		#read local config
 		if os.path.isfile( local_conf_file ):
 			try:
@@ -209,7 +210,6 @@ class Application:
 			os.remove( self.lock_file_path )
 
 	def check_config( self, config, ignore_urls = False, ignore_normalizied_prj_name=False ):
-
 		#check modes section exists
 		config['error'] = ''
 		if ( not config.has_key('urls') or not config.has_key('modes') ):
@@ -233,13 +233,13 @@ class Application:
 							config['error'] += ' Pedant can not work with browser without required key - ' + key
 							return config
 		
-		#check full mode exists
-		if not config["modes"].has_key("full"):
-			config["error"] = "Full mode are missing in config"
+		#check default mode exists
+		if not config["modes"].has_key("*"):
+			config["error"] = "Default mode are missing in config"
 			return config
-		#check browsers is unique in full mode
+		#check browsers is unique in default mode
 		checked = {}
-		for browser in config['modes']['full']:
+		for browser in config['modes']['*']:
 			if checked.has_key( browser['unid'] ):
 				config['error'] += ' Browser ' + browser['unid'] + ' not unique'
 			checked[ browser['unid'] ] = browser['unid']
