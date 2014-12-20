@@ -16,3 +16,14 @@ Pedant has "parallel-work" mode for dealing with lots of tests ( it's fast )
 Pedant can work with different browsers ( it's wonderful )
 
 Please, take a look at wiki for details and manuals
+
+==========
+
+Easy install
+
+==========
+
+1. Download repository as zip and unpack
+2. In linux: 'chmod +x pedant-tools/bin/pedant-server' and run it: './pedant-tools/bin/pedant-server'
+3. In windows - run /pedant-tools/bin/pedant-server.bat file
+4. Open http://localhost:8081/ in your favorite browser

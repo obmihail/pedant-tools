@@ -1,4 +1,5 @@
 % include('header.tpl', title='Pedant coming soon page')
+% include('breadcrumbs.tpl', crumbs = [ ('/','Home'), ('text':'Coming soon') ])
 <div class="container">
 
 <div>

@@ -1,1 +1,0 @@
-{"msg": "approve404", "item": {"name": "http_ya_ru", "url": "http://ya.ru", "unid": "http_ya_ru", "scripts": [], "load_time": 0.83, "wait_scripts": []}, "window_size": [800, 600], "browser": {"info": "no info", "name": "PhantomJS", "unid": "PhantomJS_800x600"}}

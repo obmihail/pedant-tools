@@ -7,7 +7,8 @@
 	<meta name="description" content="Web interface for pedant testing tool">
 	<meta name="author" content="Oblozhikhin Mikhail">
 	<!-- bootstrap -->
-	<link href="/assets/css/bootstrap.css" rel="stylesheet">
+	<!-- <link href="/assets/css/bootstrap.css" rel="stylesheet"> -->
+	<link href="/assets/css/bootstrap.min.css" rel="stylesheet">
 	<style>body{padding-top:60px; }</style>
 	<link href="/assets/css/bootstrap-responsive.css" rel="stylesheet">
 	<!-- pedant -->
@@ -17,6 +18,9 @@
 
 	<!-- jquery -->
 	<script src="/assets/scripts/jquery.min.js" type="text/javascript"></script>
+	<!-- pedant -->
+	<script type="text/javascript" src="/assets/scripts/pedant.functions.js"></script>
+	<script type="text/javascript" src="/assets/scripts/pedant.js"></script>
 	<!-- bootstrap -->
 	<script src="/assets/scripts/bootstrap.min.js" type="text/javascript"></script>
 	<!-- fancy box wheel -->
@@ -29,8 +33,7 @@
 	<![endif]-->
 	<!-- lazy-load plugin -->
 	<script type="text/javascript" src="/assets/scripts/jquery.lazyload.min.js"></script>
-	<!-- pedant -->
-	<script type="text/javascript" src="/assets/scripts/pedant.js"></script>
+	<script type="text/javascript" src="/assets/scripts/lodash.js"></script>
 	
 	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/ico/apple-touch-icon-144-precomposed.png">
 	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/assets/ico/apple-touch-icon-114-precomposed.png">
@@ -48,7 +51,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</a>
-				<a class="brand" href="/">&lt; Home</a>
+				<a class="navbar-brand" href="/">&lt; Home</a>
 				<div class="nav-collapse collapse">
 					% setdefault('menu', [ {'name':'MockMenu1','active':False,'href':'#1'}, {'name':'MockMenu2','active':True,'href':'#2'}, {'name':'MockMenu3','active':False,'href':'#3'} ])
 					<!-- <ul class="nav">
@@ -65,3 +68,6 @@
 			</div>
 		</div>
 	</div>
+
+
+<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="10000" ></div>

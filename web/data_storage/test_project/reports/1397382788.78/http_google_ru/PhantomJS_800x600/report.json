@@ -1,1 +1,0 @@
-{"msg": "approve404", "item": {"name": "http_google_ru", "url": "http://google.ru", "unid": "http_google_ru", "scripts": [], "load_time": 1.08, "wait_scripts": []}, "window_size": [800, 600], "browser": {"info": "no info", "name": "PhantomJS", "unid": "PhantomJS_800x600"}}

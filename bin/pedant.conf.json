@@ -5,21 +5,20 @@
 	"port" : 8081
 },
 
-"screens" : {
-	
-	"max_workers" : 4,
-	"url_mask" : "http://localhost:8080/mystaticfiles/production/#ITEM_NAME#",
-	"fast" : [ 
-			{ "name":"PhantomJS", 
-			  "window_size": [800,600], 
-			  "wd_url": "http://127.0.0.1:4445/wd/hub" , 
-			  "desired_capabilities": {"phantomjs.page.settings.resourceTimeout": "1000"} }
-	],
-	"full" : [
-		{ "name":"PhantomJS", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub" },	
-		{ "name":"Firefox", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub" },
-		{ "name":"Firefox", "window_size":[1024,768], "wd_url": "http://127.0.0.1:4444/wd/hub" }
-	]
+"selenium": {
+
+	"default_browsers" : {
+			"ANDROID" : { "unid":"ANDROID_800x600", "type":"ANDROID", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome android browser", "desired_capabilities": {"platform": "ANDROID", "browserName": "android", "version": "", "javascriptEnabled": true} },
+			"CHROME" : { "unid":"CHROME_800x600", "type":"CHROME", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome chrome browser", "desired_capabilities": {"platform": "ANY", "browserName": "chrome", "version": "", "javascriptEnabled": true} },
+			"FIREFOX" : { "unid":"FIREFOX_800x600", "type":"FIREFOX", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome firefox browser", "desired_capabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true} },
+			"INTERNETEXPLORER" : { "unid":"INTERNETEXPLORER_800x600", "type":"INTERNETEXPLORER", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "IE", "desired_capabilities": {"platform": "WINDOWS", "browserName": "internet explorer", "version": "", "javascriptEnabled": true} },
+			"IPAD" : { "unid":"IPAD_800x600", "type":"IPAD", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome ipad browser", "desired_capabilities": {"platform": "MAC", "browserName": "iPad", "version": "", "javascriptEnabled": true} },
+			"IPHONE" : { "unid":"IPHONE_800x600", "type":"IPHONE", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome iphone browser", "desired_capabilities": {"platform": "MAC", "browserName": "iPhone", "version": "", "javascriptEnabled": true} },
+			"OPERA" : { "unid":"OPERA_800x600", "type":"OPERA", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome opera browser", "desired_capabilities": {"platform": "ANY", "browserName": "opera", "version": "", "javascriptEnabled": true} },
+			"PHANTOMJS" : { "unid":"PHANTOMJS_800x600", "type":"PHANTOMJS", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome phantom browser", "desired_capabilities": {"platform": "ANY", "browserName": "phantomjs", "version": "", "javascriptEnabled": true, "phantomjs.page.settings.resourceTimeout": "3000" } },
+			"SAFARI" : { "unid":"SAFARI_800x600", "type":"SAFARI", "window_size":[800,600], "wd_url": "http://127.0.0.1:4444/wd/hub", "info": "My awesome safari browser", "desired_capabilities": {"platform": "ANY", "browserName": "safari", "version": "", "javascriptEnabled": true} }
+		}
+
 }
 
 }

@@ -1,31 +1,22 @@
 #from threading import Thread
-import threading
-import thread
-import PedantStandartHandlers
+from time import gmtime, strftime
+import threading, thread
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os,sys,json,hashlib,Image,ImageChops,ImageDraw,time,uuid,urllib2,shutil
 
 class Worker(threading.Thread):
 
-	browser = {}
 
-	items = []
-
-	timestamp = ''
-
-	pathes = {}
-
-	handler = False
-
-	finished_ids = {}
-
-	handled = False
-
-	root = ''
+	def initStop(self):
+		self.stop = True
 
 	def __init__(self, browser, items, timestamp, data_storage_root ):
-
+		self.log_str = ''
+		self.finished_ids = {}
+		self.handled = False
+		self.stop = False
+		
 		super(Worker, self).__init__()
 		#browser dict may be using in another worker, need copy
 		self.browser = browser.copy()
@@ -35,6 +26,14 @@ class Worker(threading.Thread):
 		self.pathes = self.calculatePathes()
 		self.createFolders()
 
+	def log( self, line = False, level="INFO"):
+		if (line):
+			self.log_str += strftime("%Y-%m-%d %H:%M:%S", gmtime()) + ' [' + level + '] ' + line + "\n"
+		else:
+			log = self.log_str
+			self.log_str = ''
+			return log
+
 	"""
 	init browser
 	"""
@@ -42,20 +41,23 @@ class Worker(threading.Thread):
 		#launch browser
 		if ( self.browser.has_key( 'wd_url' ) ):
 			#caps
-			caps = getattr( DesiredCapabilities , self.browser['name'].upper() )
+			caps = getattr( DesiredCapabilities , self.browser['type'].upper() )
 			if self.browser.has_key('desired_capabilities'):
 				caps = dict( caps.items() + self.browser['desired_capabilities'].items() )
 			#print caps
 			try:
-				self.browser['instance'] = webdriver.Remote(  
+				self.browser['instance'] = webdriver.Remote(
 						command_executor=str(self.browser['wd_url']),
 						desired_capabilities=caps,
 						keep_alive=False )
+				self.log( "Connected to browser: " + str( self.browser ) )
 			except:
+				self.log( "Can not connect to browser: " + str( self.browser ) , "ERROR" )
 				print "\n >>> Can not connect to browser: " + str( self.browser ) 
 				thread.exit()
 		else:
 			print "\n >>> Browser without wd_url in thread: " + str(self.browser)
+			self.log( "Browser without wd_url in thread" , "ERROR" )
 			thread.exit()
 
 		self.browser['instance'].set_window_size( self.browser['window_size'][0],self.browser['window_size'][1] )
@@ -63,38 +65,57 @@ class Worker(threading.Thread):
 	"""
 	init handler instance
 	"""
-	def initHandler(self):
-		sys.path.insert(0, os.path.dirname(__file__))
-		import PedantStandartHandlers
+	def init_hook(self):
+		sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+		import PedantStandartHooks
 		try:
 			sys.path.insert(0, os.getcwd())
-			import PedantHandlers
-			self.handler = PedantHandlers.PedantHandlers( self.browser )
+			sys.path.insert(0, self.root )
+			import PedantHooks
+			self.log( "Hooks founded" )
+			self.hook = PedantHooks.Hooks( self.browser )
+			self.log( "Hooks initialized" )
 		except:
-			self.handler = PedantStandartHandlers.PedantStandartHandlers( self.browser )
+			self.hook = PedantStandartHooks.PedantHooks(  self.browser  )
+		#set logging function
+		self.hook.log = self.log
 
 	"""
-	run this
+	run thread
 	@return void
 	"""
 	def run(self):
 		#start browser
 		self.initBrowser()
-		self.initHandler()
+		self.init_hook()
+		self.hook.call_by_event( 'before_items',self.items )
 		for item in self.items:
+			if ( self.stop ):
+				self.log( "Skip url: " + item['url'] )
+				continue
+			self.log( "Files for left (for current worker): " + str( ( len(self.items) - len(self.finished_ids) ) ) )
+			self.log( "Start checking for url: " + item['url'] )
 			start_time = time.time()
+			self.hook.call_by_event( 'before_item', item )
 			self.browser['instance'].get( item['url'] )
 			item['load_time'] = round( time.time() - start_time , 2)
 			#handler before screen
-			self.handler.before_screenshot( item )
+			self.hook.call_by_event( 'before_screenshot', item )
 			#print "Handler <before_screenshot> error with item <" +item['unid']+ ">"
 			self.browser['instance'].save_screenshot( self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 			try:
-				self.screen_processing( item )
-			except:
-				print "Item <" + item['unid'] + "> error:", sys.exc_info()[0]
-			self.finished_ids[ item['unid'] ] = item['unid']
-		self.browser['instance'].close
+				result = self.screen_processing( item )
+				self.hook.call_by_event( 'after_item', item , result )
+				self.save_result( item , result )
+			except Exception as e:
+				print "Item <" + item['unid'] + "> error:" + str(e)
+				self.log( "Exception while screen processing for resource: " + item['url'] + " Exception:" + str(e) )
+			self.finished_ids[ item['unid']+self.browser['unid'] ] = True
+			self.log( "Finished checking for url " + item['url'] )
+		self.hook.call_by_event( 'after_items', self.items )
+		self.browser['instance'].close()
+		self.handled = True
+		self.log( "Disconnect from selenium browser with unid " + self.browser['unid'] )
 		return
 
 	"""
@@ -105,15 +126,15 @@ class Worker(threading.Thread):
 		# iterate items and calculate pathes
 		pathes = {}
 		for item in self.items:
-			hvostik = item['unid'] + os.sep + self.browser['unid'] + os.sep
+			path_suffix = item['unid'] + os.sep + self.browser['unid'] + os.sep
 			pathes[ item['unid'] ] = {
 				'abs': {
-					'approved_dir': self.root + os.sep + 'approved' + os.sep + hvostik,
-					'report_dir': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik,
-					'approved_path': self.root + os.sep + 'approved' + os.sep + hvostik + 'approved.png',
-					'actual_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'actual.png',
-					'approved_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'approved_report.png',
-					'diff_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + hvostik + 'diff.png', 
+					'approved_dir': self.root + os.sep + 'approved' + os.sep + path_suffix,
+					'report_dir': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix,
+					'approved_path': self.root + os.sep + 'approved' + os.sep + path_suffix + 'approved.png',
+					'actual_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'actual.png',
+					'approved_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'approved_report.png',
+					'diff_report_path': self.root + os.sep + 'reports' + os.sep + self.timestamp + os.sep + path_suffix + 'diff.png', 
 				}
 			}
 		return pathes
@@ -124,8 +145,8 @@ class Worker(threading.Thread):
 	"""
 	def createFolders(self):
 		for item_unid,item_dict in self.pathes.iteritems():
-				if ( os.path.isdir( item_dict['abs']['report_dir'] ) == False ):
-					os.makedirs( item_dict['abs']['report_dir'] , 0777 )
+			if ( os.path.isdir( item_dict['abs']['report_dir'] ) == False ):
+				os.makedirs( item_dict['abs']['report_dir'] , 0777 )
 
 	"""
 	This function do work with taked screenshot
@@ -144,31 +165,24 @@ class Worker(threading.Thread):
 					self.pathes[ item['unid'] ]['abs']['actual_report_path'],
 					self.pathes[ item['unid'] ]['abs']['diff_report_path']
 					)
-
 				shutil.copyfile( self.pathes[ item['unid'] ]['abs']['approved_path'], self.pathes[ item['unid'] ]['abs']['approved_report_path'] )
-				## if has diff - report error
 				if ( compare_res ):
-					self.save_result( "diff" , item )
-				## else - report success
+					return "diff"
 				else:
-					self.save_result( "success", item )
+					return "success"
 			#have not approved
 			else:
-				self.save_result( "approve404", item )
+				return "approve404"
 		else:
-			print "\n >>> ERROR: Can not save actual screenshot in: " + actual_path + "\n"
-			return True
+			raise Exception( "Screenshot not saved. Path: " + self.pathes[ item['unid'] ]['abs']['actual_report_path'] )
 
-	def save_result(self,msg,item):
+	def save_result(self,item, result ):
 		#print "save result for file \n" 
+		self.log( "Save report for item: " + item['url'] )
+		bro = self.browser.copy()
+		del bro['instance']
 		obj = open( self.pathes[item['unid']]['abs']['report_dir'] + os.sep + 'report.json' , 'wb')
-		json.dump( {
-				'item' : item,
-				'browser' : { 'name': self.browser['name'], 'info' : self.browser['info'], 'unid':self.browser['unid'] },
-				'window_size': self.browser['window_size'],
-				'msg' : msg,
-				}, 
-				obj)
+		json.dump( { 'item' : item, 'browser' : bro, 'window_size': self.browser['window_size'], 'msg' : result }, obj)
 		obj.close
 
 	"""
@@ -182,7 +196,6 @@ class Worker(threading.Thread):
 		#
 		dataA = open(approved_path, 'rb').read()
 		dataB = open(actual_path, 'rb').read()
-
 		if hashlib.md5(dataA).hexdigest() != hashlib.md5(dataB).hexdigest():
 			#make one size
 			# ToDo 

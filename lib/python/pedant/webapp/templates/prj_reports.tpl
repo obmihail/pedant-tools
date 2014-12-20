@@ -1,9 +1,9 @@
-% include('header.tpl', title='Pedant main page')
+% include('header.tpl', title='Reports for '+ project )
 <div class="container">
 
-<h3>Here is a reports list for {{project}}:</h3>
+% include('breadcrumbs.tpl', crumbs = [ ('/','Home'), ('/projects','Projects'), ('/projects/'+project, project), ('', 'Reports') ])
 
-<div data-alerts="alerts" data-titles="{'warning': '<em>Warning!</em>'}" data-ids="myid" data-fade="2000" ></div>
+<h3>Here is a reports list for {{project}}:</h3>
 
 <table class="table table-striped">
 	<thead>
@@ -16,10 +16,10 @@
 		% for report in reports_list:
 			<tr>
 				<td>
-					<a href="/{{project}}/reports/{{report}}"> {{report}} </a>
+					<a href="/projects/{{project}}/reports/{{report['timestamp']}}"> {{report['pretty']}} </a>
 				</td>
 				<td>
-					<a class="pedant-icon delete-item" data-delete-url="/{{project}}/ajax/delete/report/{{report}}"></a>
+					<a href="javascript:remove_approved_item(this);" class="pedant-icon delete-item delete-report" data-delete-url="/ajax/projects/{{project}}/delete/report/{{report['timestamp']}}"></a>
 				</td>
 			</tr>
 		% end

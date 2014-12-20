@@ -50,3 +50,8 @@ td.diff > i.status-diff,img.status-diff {
 .table tbody tr.selected>td{
 	background-color:#CBE8F8;
 }
+
+.border-row {
+    border-bottom: 1px solid #ccc;
+    margin: 10px;
+}

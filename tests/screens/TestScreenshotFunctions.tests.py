@@ -6,7 +6,7 @@ class TestScreenshotFunctions(unittest.TestCase):
 
 	def setUp(self):
 		self.testWorker = Worker.Worker( {"FakeBrowser":True} , [], "", "" )
-		self.testDir = os.path.dirname( __file__ ) + os.sep + 'testData' + os.sep
+		self.testDir = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'testData' + os.sep
 		self.tmpDir = self.testDir + 'tmp' + os.sep
 		if not os.path.isdir( self.tmpDir ):
 			os.makedirs( self.tmpDir )
