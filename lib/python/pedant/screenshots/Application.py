@@ -73,10 +73,11 @@ class Application:
 			if csl(link_name, source, flags) == 0:
 				raise ctypes.WinError( descr='Sorry. Symlink not created. You can find solution in project wiki on github.' )
 
-	def create_symlinks( self, source_dir ):
-		prj_root = self.config['data_storage_root']
+	def create_symlinks( self, source_dir, prj_root = False ):
+		if not prj_root:
+			prj_root = self.config['data_storage_root']
 		if not os.path.isdir( prj_root ):
-			os.makedirs( prj_root )
+			os.makedirs( prj_root, 0777 )
 		for filename in ( 'pedant.json', 'urls.json', 'PedantHooks.py' ):
 			if os.path.isfile( source_dir + os.sep + filename ):
 				if ( os.path.isfile( prj_root + os.sep + filename ) ):

@@ -7,7 +7,6 @@ class Hooks(PedantHooks):
 	PARENT VARS
 	self.browser - dict of current browser. self.browser['instance'] - current webdriver instance.
 
-
 	PARENT FUNCTIONS
 	self.log( "log message", level='INFO' ) - write something to pedant log with level 'INFO'
 	self.log( "log message", level='WARN' ) - write something to pedant log with level 'WARN'
@@ -25,7 +24,7 @@ class Hooks(PedantHooks):
 
 	@hook( 'before_items' )
 	def log_my_items( self, items ):
-		#self.log( "Before all items hook" )
+		self.log( "Before all items hook" )
 		#self.browser['instance'].implicitly_wait(1)# set implicitly_wait for current browser
 		pass
 
@@ -33,23 +32,25 @@ class Hooks(PedantHooks):
 	@hook( 'before_item' )
 	def before_item(self, item ):
 		#self.wait_js( "return document.readyState != 'complete'", 5000 )
-		#self.log( 'Log message before item ' + item['unid'] )
+		self.log( 'Log message before item ' + item['unid'] )
 		pass
 
 
 	@hook( 'before_screenshot' )
 	def my_method( self, item ):
+		self.log( "Before screenshot hook" )
 		#element = self.browser['instance'].find_element_by_class_name('input__control')
 		pass
 
 
 	@hook( 'after_item' )
 	def after_item( self, item, result ):
-		#print "after item hook for: ", item, result
+		self.log( "After item hook" )
 		pass
 
 
 	@hook( 'after_items' )
 	def after_items( self, items ):
+		self.log( "After all items hook" )
 		#print "after all items:", items
 		pass

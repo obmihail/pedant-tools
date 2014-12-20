@@ -52,7 +52,7 @@ def callback(path):
 #pedant report images
 @app.route('/projects/<project>/static/<path:path>')
 def callback(project,path):
-	print config['data_storage_root']+os.sep+project + path 
+	#print config['data_storage_root']+os.sep+project + path 
 	return bottle.static_file(path,config['data_storage_root']+os.sep+project)
 
 #coming soon page
@@ -119,7 +119,7 @@ def index( project ):
 		prj_config['urls'] = json.load( open( urls_file ) )
 	else:
 		prj_config['without_urls'] = True
-	print prj_config
+	#print prj_config
 	return { 
 		'config': prj_config,
 		'action':'update', 
@@ -380,7 +380,6 @@ def index( name ):
 			prj_config = app.get_project_config( prj_dir )
 			# get urls from file
 			urls_file = config['data_storage_root'] + os.sep + prj_config['prj_name'] + os.sep + 'urls.json'
-			print urls_file
 			if os.path.isfile(urls_file):
 				prj_config['urls'] = app.make_urls_from_list( json.load( open( urls_file ) ) )
 			else:
@@ -448,34 +447,26 @@ def index():
 			if ( detected_config.has_key('error') ):
 				messages.append( 'Project config ' + file + ' was skipped: ' + detected_config['error'] )
 				continue
-			project_path = config['data_storage_root'] + os.sep + detected_config['prj_name']
+			project_dir = config['data_storage_root'] + os.sep + detected_config['prj_name']
 			#
+			candidate_dir = os.path.dirname( file )
 			prj_name = detected_config['prj_name']
-			config_link = project_path + os.sep + 'pedant.json'
-			urls_file = os.path.dirname( file ) + os.sep + 'urls.json'
-			urls_link = project_path + os.sep + 'urls.json'
-			#remove existing links for this project
-			if ( os.path.isdir( project_path ) ):
-				if ( os.path.isfile( config_link ) ):
-					print config_link
-					os.remove( config_link )
-
-				if ( os.path.isfile(urls_link) ):
-					os.remove( urls_link )
+			#TODO: REFACTOR IT. Check permissions for symlink. Need for windows OS
+			try:
+				tmp_file = config['tmp_root'] + os.sep + 'win_symlink'
+				if os.path.isfile( tmp_file ):
+					os.remove(tmp_file)
+				app.symlink( file, tmp_file )
+			except Exception, e:
+				return json_error( 'DEFAULT', ( '%s' % e ) )
+			#
+			if ( os.path.isdir( project_dir ) ):
 				messages.append( "Project " + prj_name + " been updated" )
 			#make new project dir in data storage
 			else:
 				messages.append( "Project " + prj_name + " been created" )
-				os.makedirs( project_path , 0777 )
-			#try create symlink
-			try:
-				app.symlink( file, config_link )
-				# if urls.json file exists - create symlink to it too
-				if ( os.path.isfile( urls_file ) ):
-					app.symlink( urls_file, urls_link )
-			except Exception, e:
-				return json_error( 'DEFAULT', ( '%s' % e ) )
-
+			#try create symlinks
+			app.create_symlinks( candidate_dir, project_dir )
 		return json_data( '<br>'.join(messages), { "projects": get_project_list() }  )
 	return json_error( 'PATH_NOT_FOUND' , dirname )
 
@@ -494,7 +485,7 @@ def index(project):
 	zipfilepath = config['tmp_root'] + os.sep + zipfilename
 	what_need_zip = config['data_storage_root'] + os.sep + project + os.sep + 'approved'
 	root = os.path.realpath( what_need_zip )
-	print root
+	#print root
 	#create zip archieve in tmp file
 	if os.path.isdir( root ):
 		files = glob.glob( what_need_zip + os.sep + '*' + os.sep + '*' + os.sep + 'approved.png' )
