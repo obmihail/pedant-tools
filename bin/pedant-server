@@ -453,7 +453,7 @@ def index():
 			prj_name = detected_config['prj_name']
 			#TODO: REFACTOR IT. Check permissions for symlink. Need for windows OS
 			try:
-				tmp_file = config['tmp_root'] + os.sep + 'win_symlink'
+				tmp_file = config['tmp_root'] + os.sep + 'tmp_symlink'
 				if os.path.isfile( tmp_file ):
 					os.remove(tmp_file)
 				app.symlink( file, tmp_file )
