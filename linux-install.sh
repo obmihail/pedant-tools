@@ -8,7 +8,7 @@ pip install selenium -t lib/python
 [ -d lib/python/bottle ] || mkdir lib/python/bottle
 
 #install bottle
-pip install bottle -t lib/python/bottle >> /dev/null
+pip install bottle -t lib/python/bottle
 
 #i don't know why bottle __init__.py is missing
 [ -f lib/python/bottle/__init__.py ] || touch lib/python/bottle/__init__.py
